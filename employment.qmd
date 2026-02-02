@@ -1,0 +1,40 @@
+# Employment
+
+
+## Setup
+
+```{r}
+#| label: setup
+
+rm(list = ls())
+GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+DDATA <- fs::path(GITROOT, "data")
+DQCEW <- fs::path("D:/", "data", "qcew")
+
+source(fs::path(GITROOT, "libraries.R"))
+source(fs::path(GITROOT, "libraries_ts.R"))
+
+# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
+# source(fs::path(QROOT, "setup.R"))
+
+```
+
+```{r}
+
+# https://cran.r-project.org/web/packages/BLSloadR/BLSloadR.pdf
+library("BLSloadR")
+
+laus_states <- get_laus()
+laus_states_unadjusted <- get_laus("state_unadjusted")
+
+tmp <- laus_states |>
+  filter(area_text == "New York")
+
+tmp |>
+  filter(measure_text == "employment") |>
+  ggplot(aes(x = date, y = value)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal()
+
+```
