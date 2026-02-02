@@ -1,0 +1,192 @@
+
+# Get QCEW data
+
+-   2023 is the latest full year as of 3/22/325
+-   Get annual QCEW data for NY counties
+-   Do minor cleaning
+-   Put NYC and MTA markers on the file
+-   Save as `qcewstco.rds` in the intermediate data folder
+-   Save an MTA subset with just the latest year
+
+## QCEW data from the New York State Department of Labor
+
+-   [NYSDOL QCEW landing page](https://dol.ny.gov/quarterly-census-employment-and-wages)
+-   [direct zip link](https://statistics.labor.ny.gov/qcew.zip)
+-   [technical notes](https://dol.ny.gov/qcew-technical-notes)
+
+The New York State Department of Labor (NYSDOL) provides a version of the BLS Quarterly Census of Employment and Wages (QCEW) that has quarterly county-level wage, establishment, and employment data in a format we need. The data are available from 2000 through a recent quarter. A new quarter and revisions to prior quarters generally are available about 6 months after end of a quarter.
+
+## Setup
+
+```{r}
+#| label: setup
+
+rm(list = ls())
+GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+DDATA <- fs::path(GITROOT, "data")
+DQCEW <- fs::path("D:/", "data", "qcew")
+
+source(fs::path(GITROOT, "libraries.R"))
+source(fs::path(GITROOT, "libraries_ts.R"))
+
+# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
+# source(fs::path(QROOT, "setup.R"))
+
+```
+
+
+
+```{r}
+#| label: qcew-names
+#| output: false
+
+url <- "https://statistics.labor.ny.gov/qcew.zip"
+fname <- fs::path_file(url)
+fname <- "qcew_2026-02-02.zip"
+
+zpath <- fs::path(DQCEW, fname)
+# zpath <- paste0(DQCEW, "/", fname)
+
+```
+
+## Download qcew data
+
+Note: The latest qcew.zip file, which I downloaded once manually and once with the code below, appears to have been corrupted, at least as downloaded by my machine. I had to use an external utility (WinRar) to unzip it to a separate folder, then rezip it, after which the computer could read it.
+
+Change eval: to true in chunk below to re-download data.
+
+```{r}
+#| label: download-qcew
+#| eval: false
+
+# Sys.setenv(R_DEFAULT_INTERNET_TIMEOUT = 400)
+# options(timeout = max(400, getOption("timeout")))
+# download.file(url, zpath, mode = "wb")
+
+```
+
+```{r}
+#| label: make-factors
+#| output: false
+
+# I don't know what codes NYSDOL uses so make my own
+# ownf <- c(`1`="Total Private and Government",
+#           `2`="Private",
+#           `3`="Total Government",
+#           `4`="Federal Government",
+#           `5`="State Government",
+#           `6`="Local Government")
+
+owner_factors <- vroom(
+  I(
+    "
+ownerf, owner, ownershort
+1, Total Private and Government, totown
+2, Private, privown
+3, Total Government, totgovown
+4, Federal Government, fedgovown
+5, State Government, stategovown
+6, Local Government, localgovown
+7, Other Government, othergovown
+"
+  )
+)
+write_csv(owner_factors, fs::path(DDATA, "owner_factors.csv"))
+
+```
+
+
+## Quarterly data
+
+```{r}
+#| label: get-save-qcew-state-county
+#| eval: true
+
+zfiles <- zip::zip_list(zpath)
+
+# csvfiles <- zfiles |>
+#   filter(str_starts(filename, "qcew_annual_")) |>
+#   pull(filename) |>
+#   sort()
+
+csvfiles <- zfiles |>
+  filter(str_starts(filename, "qcew_quarter_")) |>
+  pull(filename) |>
+  sort()
+
+system.time(df <- vroom(purrr::map(csvfiles, \(x) unz(zpath, x)))) # 10.3 secs; unzipping all and using purrr is faster
+
+df2 <- df |>
+  rename_with(str_to_lower)
+
+# count(df2, areatype)
+# count(df2, areatype, owner)
+
+df3 <- df2 |>
+  filter(areatype %in% c("State", "County")) |>
+  left_join(owner_factors, by = join_by(owner)) |>
+  mutate(
+    areatype = str_to_lower(areatype),
+    empq = pmean(mnth1emp, mnth2emp, mnth2emp),
+    date = yq(paste(year, quarter, sep = "-"))
+  )
+glimpse(df3)
+count(df3, ownerf, ownershort, owner)
+summary(df3)
+
+df4 <- df3 |>
+  select(
+    date,
+    areatype,
+    area,
+    naics,
+    naics_level,
+    naics_title,
+    ownerf,
+    owner,
+    ownershort,
+    mnth1emp,
+    mnth2emp,
+    mnth2emp,
+    empq,
+    totwage
+  )
+summary(df4)
+# skimr::skim_without_charts(df4)
+
+saveRDS(df4, fs::path(DQCEW, "qcewstcoq.rds"))
+
+```
+
+
+```{r}
+
+qcew <- readRDS(fs::path(DQCEW, "qcewstcoq.rds"))
+summary(qcew)
+glimpse(qcew)
+count(qcew, ownerf, ownershort)
+
+tmp <- qcew |>
+  filter(ownershort == "totown", areatype == "state")
+
+tmp |>
+  filter(naics == "00") |>
+  arrange(date) |>
+  mutate(pchya = totwage / lag(totwage, 4) - 1) |>
+  ggplot(aes(date, pchya)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  scale_y_continuous(
+    breaks = seq(-.5, .5, .01),
+    labels = scales::percent_format(accuracy = 1)
+  ) +
+  theme_bw()
+
+
+```
+
+
+```{r stop_here, echo=FALSE}
+knitr::knit_exit()
+```
