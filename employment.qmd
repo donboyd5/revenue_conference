@@ -2,6 +2,16 @@
 
 https://www.bls.gov/sae/
 
+Benchmark https://www.bls.gov/news.release/presae.nr0.htm
+https://www.bls.gov/news.release/presae.tn.htm
+https://www.bls.gov/web/empsit/cesbmart.htm national
+https://www.bls.gov/sae/publications/benchmark-article/annual-benchmark-article.htm state and area
+
+The State Employment and Unemployment data for January 2026 are expected to be released in April 2026.
+https://www.bls.gov/sae/
+
+
+Phillippa Dunne
 
 ## Setup
 
@@ -24,6 +34,100 @@ library("BLSloadR")
 # source(fs::path(QROOT, "setup.R"))
 
 ```
+
+
+## Data from BLS via BLSloadR
+
+```{r}
+#| eval: false
+
+# https://cran.r-project.org/web/packages/BLSloadR/BLSloadR.pdf
+# library("BLSloadR")
+
+ces_data <- BLSloadR::get_ces() # takes a while
+fname <- paste0("ces_data_", Sys.Date(), ".rds")
+saveRDS(ces_data, fs::path(DCES, fname))
+
+```
+
+```{r}
+
+# time consuming
+fname <- "ces_data_2026-02-03.rds"
+ces <- readRDS(fs::path(DCES, fname))
+
+```
+
+```{r}
+
+glimpse(ces)
+summary(ces)
+
+inds <- count(ces, supersector_code, industry_code, industry_name)
+
+cesny <- ces |>
+  filter(state_code == "36", area_code == "00000", supersector_code == "00")
+
+count(cesny, data_type_code, data_type_text)
+count(cesny, data_type_code, seasonal)
+
+cesny |>
+  filter(data_type_code == "01") |>
+  filter(year(date) >= 2023) |>
+  ggplot(aes(date, value, colour = seasonal)) +
+  geom_line() +
+  geom_point()
+
+cesny |>
+  filter(data_type_code == "01") |>
+  select(date, value, seasonal) |>
+  pivot_wider(names_from = seasonal, values_from = value) |>
+  filter(year(date) >= 2023)
+
+ces |>
+  filter(
+    state_code == "36",
+    area_code == "00000",
+    supersector_code %in% c("06", "07")
+  ) |>
+  filter(data_type_code == "01", seasonal == "S") |>
+  # filter(year(date) >= 2010) |>
+  filter(year(date) >= 2022) |>
+  # filter(year(date) >= 2023) |>
+  mutate(idate = min(date)) |>
+  mutate(idx = value / value[date == idate] * 100, .by = supersector_name) |>
+  ggplot(aes(date, idx, colour = supersector_name)) +
+  geom_line() +
+  geom_point()
+
+```
+
+```{r}
+
+laus_states <- get_laus()
+laus_states_unadjusted <- get_laus("state_unadjusted")
+
+laus_states_unadjusted |>
+  filter(
+    area_text == "New York",
+    measure_text == "employment",
+    year(date) >= 2022
+  )
+
+tmp <- laus_states |>
+  filter(area_text == "New York")
+
+tmp |>
+  filter(measure_text == "employment") |>
+  ggplot(aes(x = date, y = value)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal()
+
+```
+
+
+## Data from NY State
 
 
 ```{r}
@@ -118,68 +222,5 @@ cesny1 |>
   arrange(date) |>
   mutate(pchya = emp / lag(emp, 12) - 1, .by = c(area, series, rectype)) |>
   filter(year >= 2023)
-
-
-```
-
-```{r}
-#| eval: false
-
-# https://cran.r-project.org/web/packages/BLSloadR/BLSloadR.pdf
-# library("BLSloadR")
-
-ces_data <- BLSloadR::get_ces() # takes a while
-fname <- paste0("ces_data_", Sys.Date(), ".rds")
-saveRDS(ces_data, fs::path(DCES, fname))
-
-```
-
-```{r}
-
-fname <- "ces_data_2026-02-03.rds"
-ces <- readRDS(fs::path(DCES, fname))
-
-glimpse(ces)
-summary(ces)
-
-cesny <- ces |>
-  filter(state_code == "36", area_code == "00000", supersector_code == "00")
-
-count(cesny, data_type_code, data_type_text)
-count(cesny, data_type_code, seasonal)
-
-cesny |>
-  filter(data_type_code == "01") |>
-  filter(year(date) >= 2023) |>
-  ggplot(aes(date, value, colour = seasonal)) +
-  geom_line() +
-  geom_point()
-
-cesny |>
-  filter(data_type_code == "01") |>
-  select(date, value, seasonal) |>
-  pivot_wider(names_from = seasonal, values_from = value) |>
-  filter(year(date) >= 2023)
-
-
-laus_states <- get_laus()
-laus_states_unadjusted <- get_laus("state_unadjusted")
-
-laus_states_unadjusted |>
-  filter(
-    area_text == "New York",
-    measure_text == "employment",
-    year(date) >= 2022
-  )
-
-tmp <- laus_states |>
-  filter(area_text == "New York")
-
-tmp |>
-  filter(measure_text == "employment") |>
-  ggplot(aes(x = date, y = value)) +
-  geom_line() +
-  geom_point() +
-  theme_minimal()
 
 ```
