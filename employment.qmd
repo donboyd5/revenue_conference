@@ -10,22 +10,165 @@ rm(list = ls())
 GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
 DDATA <- fs::path(GITROOT, "data")
 DQCEW <- fs::path("D:/", "data", "qcew")
+DCES <- fs::path("D:/", "data", "ces") # current employment statistics
+DCESNY <- fs::path(DCES, "cesny") # current employment statistics ny state
 
 source(fs::path(GITROOT, "libraries.R"))
 source(fs::path(GITROOT, "libraries_ts.R"))
+# https://cran.r-project.org/web/packages/BLSloadR/BLSloadR.pdf
+library("BLSloadR")
 
 # QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
 # source(fs::path(QROOT, "setup.R"))
 
 ```
 
+
 ```{r}
 
+# https://data.ny.gov/Economic-Development/Current-Employment-Statistics-Beginning-1990/6k74-dgkb
+# url <- "https://data.ny.gov/a1177f73-6628-4654-b8d3-25cc2335bf5b"
+url <- "https://data.ny.gov/api/views/6k74-dgkb/rows.csv?accessType=DOWNLOAD" # file size is smaller than manual download because it has numeric not characer data
+fname <- "Current_Employment_Statistics__Beginning_1990.csv"
+
+# fname <- "cesny_data.csv"
+download.file(url, destfile = fs::path(DCESNY, fname))
+
+```
+
+```{r}
+
+# These data are NS except for NYS totals
+fname <- "Current_Employment_Statistics__Beginning_1990.csv"
+cnames <- c("area", "areaname", "series", "title", "year", "month", "emp")
+cesny <- vroom::vroom(fs::path(DCESNY, fname))
+
+cesny1 <- cesny |>
+  set_names(cnames) |>
+  mutate(
+    rectype = ifelse(month == 0, "annual", "month"),
+    date = make_date(year, month, 1)
+  ) |>
+  select(-month)
+
+glimpse(cesny1)
+skimr::skim_without_charts(cesny1)
+
+count(cesny1, area, areaname) # nys 00000; nyc 93561; 28 counties; 13 areas
+# count(cesny1, series, title) # 191 series codes in total -- main level:
+#    series   title                                                                              n
+#    <chr>    <chr>                                                                          <int>
+#  1 00000000 Total Nonfarm                                                                  19518
+#  2 05000000 Total Private                                                                  19518
+#  3 06000000 Goods Producing                                                                19518
+#  4 07000000 Service-Providing                                                              19518
+#  5 08000000 Private Service Providing                                                      19518
+
+```
+
+```{r}
+cesny1 |>
+  filter(area == "00000", series == "00000000", rectype == "annual") |>
+  ggplot(aes(year, emp)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal()
+
+cesny1 |>
+  filter(
+    area == "00000",
+    series == "00000000",
+    rectype == "month",
+    year >= 2022
+  ) |>
+  ggplot(aes(date, emp)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal()
+
+cesny1 |>
+  filter(area == "00000", series == "00000000", rectype == "month") |>
+  arrange(date) |>
+  mutate(pchya = emp / lag(emp, 12) - 1, .by = c(area, series, rectype)) |>
+  filter(year >= 2023) |>
+  ggplot(aes(date, pchya)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "solid", color = "blue") +
+  theme_minimal() +
+  scale_y_continuous(
+    breaks = seq(-1, 1, .005),
+    labels = scales::percent_format(accuracy = 0.1)
+  ) +
+  scale_x_date(
+    name = NULL,
+    date_labels = "%b-%Y",
+    breaks = seq(as.Date("2023-01-01"), as.Date("2025-12-01"), by = "3 months")
+  ) +
+  labs(
+    title = "New York State Employment Year-over-Year Percent Change",
+    y = "% change"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+cesny1 |>
+  filter(area == "00000", series == "00000000", rectype == "month") |>
+  arrange(date) |>
+  mutate(pchya = emp / lag(emp, 12) - 1, .by = c(area, series, rectype)) |>
+  filter(year >= 2023)
+
+
+```
+
+```{r}
+#| eval: false
+
 # https://cran.r-project.org/web/packages/BLSloadR/BLSloadR.pdf
-library("BLSloadR")
+# library("BLSloadR")
+
+ces_data <- BLSloadR::get_ces() # takes a while
+fname <- paste0("ces_data_", Sys.Date(), ".rds")
+saveRDS(ces_data, fs::path(DCES, fname))
+
+```
+
+```{r}
+
+fname <- "ces_data_2026-02-03.rds"
+ces <- readRDS(fs::path(DCES, fname))
+
+glimpse(ces)
+summary(ces)
+
+cesny <- ces |>
+  filter(state_code == "36", area_code == "00000", supersector_code == "00")
+
+count(cesny, data_type_code, data_type_text)
+count(cesny, data_type_code, seasonal)
+
+cesny |>
+  filter(data_type_code == "01") |>
+  filter(year(date) >= 2023) |>
+  ggplot(aes(date, value, colour = seasonal)) +
+  geom_line() +
+  geom_point()
+
+cesny |>
+  filter(data_type_code == "01") |>
+  select(date, value, seasonal) |>
+  pivot_wider(names_from = seasonal, values_from = value) |>
+  filter(year(date) >= 2023)
+
 
 laus_states <- get_laus()
 laus_states_unadjusted <- get_laus("state_unadjusted")
+
+laus_states_unadjusted |>
+  filter(
+    area_text == "New York",
+    measure_text == "employment",
+    year(date) >= 2022
+  )
 
 tmp <- laus_states |>
   filter(area_text == "New York")
