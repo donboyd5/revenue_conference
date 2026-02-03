@@ -1,0 +1,63 @@
+---
+title: "New York Tax Revenue and the Economy"
+subtitle: "NYS Consensus Economic and Revenue Forecasting Conference"
+author: "Don Boyd"
+date: "2026-02-23"
+date-format: long
+format:
+  revealjs:
+    slide-number: true
+    chalkboard:
+      buttons: false
+    preview-links: auto
+    # logo: images/quarto.png
+    # css: styles.css
+    # footer: '[https://{{< meta prerelease-subdomain >}}quarto.org](https://{{< meta prerelease-subdomain >}}quarto.org)'
+# resources:
+#   - demo.pdf
+---
+
+## Key revenue forecasting questions
+
+-   What will they owe?
+-   When will they pay it?
+
+Often it's important to consider these questions separately.
+
+## Major challenges
+
+-  A cloudy rear-view mirror -- hard to know the future when we don't know the present
+-  Forecasters stand on shifting sands -- economic data sometimes are revised substantially
+-  The economy we measure is not (quite) the economy we tax
+
+# Where we are now
+
+## Employment
+
+## Revenue
+
+# Another section
+
+## The economy we tax
+
+Table or bar chart -- AGI and personal income
+
+## Risks
+
+- how big? / how wrong?
+- when will we know
+
+## Why capital gains are important
+
+- large
+- concentrated
+- hot money - discretionary
+- payment timing
+
+## Large
+
+## Concentrated
+
+## Hot money
+
+## Timing
