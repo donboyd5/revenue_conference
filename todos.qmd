@@ -1,13 +1,26 @@
 # TODO:
 
--  Issues and risks
+Issues and risks
 
-   -  Population growth, immigration, and employment growth
-   -  Capital gains
-   -  Financial services and bonuses (and impact on revenue more generally)
+-  Population growth, immigration, and employment growth
+-  Capital gains
+-  Financial services and bonuses (and impact on revenue more generally)
+
+Questions to answer
+
+-  How big is the risk?
+-  When will it appear?
+-  How can we improve our assumptions about the risk?
 
 Misc
 
 -  Standing on shifting sands -- data revisions
 -  What we measure vs. what we tax
 -  What taxpayers owe vs. when they pay it
+
+Why capital gains are important
+
+- large
+- concentrated
+- hot money - discretionary
+- payment timing
