@@ -21,6 +21,9 @@ library(openxlsx2) # for writing xlsx files
 library(lubridate)
 library(RColorBrewer)
 library(RcppRoll)
+
+# data
+library(BLSloadR)
 library(fredr)
 library(tidycensus)
 
@@ -40,6 +43,7 @@ library(patchwork)
 library(gridExtra)
 library(ggrepel)
 library(ggbreak)
+library(ggpattern)
 
 # tables
 library(formattable)
