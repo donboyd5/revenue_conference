@@ -62,9 +62,10 @@ pop <- readRDS(fs::path(DDATA, "ny_state_population_estimates_1970_2024.rds"))
 
 # Where we are now
 
-## Population
+<!-- ## New York State Post-Census Population Estimates -->
 
 ```{r}
+#| eval: false
 
 p1 <- pop |>
   filter(variable == "popestimate") |>
@@ -75,36 +76,120 @@ p1 <- pop |>
     labels = scales::label_comma(scale = 1e-6, accuracy = .1)
   ) +
   scale_x_continuous(name = NULL) +
-  ggtitle("New York State Post-Census Population Estimates") +
+  ggtitle("Population") +
   labs(caption = "Source: U.S. Census Bureau Population Estimates Program") +
   theme_presentation_small()
 
-p2 <- p1
-p3 <- p1
-p4 <- p1
 
 ```
 
 
 ```{r}
+#| eval: false
 
-f <- function(component) {
+f <- function(component, title, colour = "blue") {
   p <- pop |>
     filter(variable == component) |>
-    ggplot(aes(year, value)) +
-    geom_line(colour = "blue") +
-    scale_y_continuous(
-      name = "millions",
-      labels = scales::label_comma(scale = 1e-6, accuracy = .1)
+    ggplot(aes(x = factor(year), y = value)) +
+    geom_col_pattern(
+      fill = colour,
+      position = "dodge",
+      pattern = "crosshatch",
+      pattern_colour = colour
     ) +
-    scale_x_continuous(name = NULL) +
-    ggtitle("New York State Post-Census Population Estimates") +
+    geom_hline(yintercept = 0) +
+    scale_x_discrete(name = NULL) +
+    scale_y_continuous(
+      name = "population change",
+      labels = scales::label_comma(scale = 1, accuracy = 1),
+      limits = c(-350e3, 350e3)
+    ) +
+    ggtitle(title) +
     labs(caption = "Source: U.S. Census Bureau Population Estimates Program") +
     theme_presentation_small()
   p
 }
 
-f("naturalchg")
+p2 <- f(
+  "naturalchg",
+  title = "Natural Change (Births minus Deaths)",
+  colour = "darkgreen"
+)
+
+p3 <- f(
+  "domesticmig",
+  title = "Domestic Migration",
+  colour = "red"
+)
+p4 <- f(
+  "internationalmig",
+  title = "International Migration",
+  colour = "blue"
+)
+
+```
+
+
+```{r}
+#| label: four-plots
+#| fig-width: 18
+#| fig-height: 10
+#| eval: false
+
+(p1 + p2) / (p3 + p4)
+```
+
+## Post-Census Population Change
+
+```{r}
+#| label: pop-change-facets
+#| fig-width: 18
+#| fig-height: 10
+
+keep <- c(
+  "npopchg",
+  "naturalchg",
+  "domesticmig",
+  "internationalmig"
+)
+labels <- c(
+  "Net Population Change",
+  "Natural Change (Births minus Deaths)",
+  "Domestic Migration",
+  "International Migration"
+)
+
+pop |>
+  filter(variable %in% keep) |>
+  filter(year > 2020) |>
+  mutate(variable = factor(variable, levels = keep, labels = labels)) |>
+  arrange(variable) |>
+  ggplot(aes(x = factor(year), y = value, fill = variable)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(
+    values = c(
+      "Net Population Change" = "steelblue",
+      "Natural Change (Births minus Deaths)" = "seagreen",
+      "Domestic Migration" = "coral",
+      "International Migration" = "mediumpurple"
+    )
+  ) +
+  geom_hline(yintercept = 0) +
+  scale_x_discrete(name = NULL) +
+  scale_y_continuous(
+    name = "change (thousands)",
+    labels = scales::label_comma(scale = 1e-3, accuracy = 1),
+    limits = c(-350e3, 350e3),
+    breaks = seq(-400e3, 400e3, 100e3)
+  ) +
+  ggtitle("Annual Changes in New York State Population Since 2020 Census") +
+  labs(caption = "Source: U.S. Census Bureau Population Estimates Program") +
+  facet_wrap(~variable, ncol = 2, scales = "fixed") +
+  theme_presentation() +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(size = rel(1.3), face = "bold")
+  )
 
 ```
 
@@ -121,46 +206,47 @@ f("naturalchg")
 #   "residual"
 # )
 
-keep <- c(
-  "naturalchg",
-  "domesticmig",
-  "internationalmig"
-)
+# keep <- c(
+#   "naturalchg",
+#   "domesticmig",
+#   "internationalmig"
+# )
 
-pop |>
-  filter(variable %in% keep) |>
-  ggplot(aes(x = factor(year), y = value, fill = variable)) +
-  geom_col(position = "dodge") +
-  labs(
-    title = "New York State Population Change Components",
-    x = "Year",
-    y = "Population Change",
-    fill = "Component"
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# pop |>
+#   filter(variable %in% keep) |>
+#   ggplot(aes(x = factor(year), y = value, fill = "blue")) +
+#   geom_col(position = "dodge") +
+#   geom_hline(yintercept = 0) +
+#   labs(
+#     title = "New York State Population Change Components",
+#     x = "Year",
+#     y = "Population Change",
+#     fill = "Component"
+#   ) +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-pop |>
-  filter(variable %in% keep) |>
-  ggplot(aes(x = variable, y = value, fill = factor(year))) +
-  geom_col(position = "dodge") +
-  labs(
-    title = "New York State Population Change Components",
-    x = "Year",
-    y = "Population Change",
-    fill = "Component"
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
+# pop |>
+#   filter(variable %in% keep) |>
+#   ggplot(aes(x = variable, y = value, fill = factor(year))) +
+#   geom_col(position = "dodge") +
+#   labs(
+#     title = "New York State Population Change Components",
+#     x = "Year",
+#     y = "Population Change",
+#     fill = "Component"
+#   ) +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
+
+## PIT and personal income
 
 ```{r}
-#| label: four-plots
-#| fig-width: 18
-#| fig-height: 10
 
-(p1 + p2) / (p3 + p4)
+nypitds2 <- readRDS(fs::path(DPITNY, "nypitds2.rds"))
+
 ```
+
 
 ## Employment
 
