@@ -13,8 +13,13 @@ format:
     # logo: images/quarto.png
     # css: styles.css
     # footer: '[https://{{< meta prerelease-subdomain >}}quarto.org](https://{{< meta prerelease-subdomain >}}quarto.org)'
+  # pdf:
+  #   output-file: slides.pdf
+number-sections: false
 # resources:
 #   - demo.pdf
+# quarto render index.qmd --to pdf
+# quarto render index.qmd --to revealjs
 ---
 
 ## Key revenue forecasting questions
@@ -24,6 +29,31 @@ format:
 
 Often it's important to consider these questions separately.
 
+
+```{r}
+#| label: setup
+
+rm(list = ls())
+GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+DDATA <- fs::path(GITROOT, "data")
+DQCEW <- fs::path("D:/", "data", "qcew")
+
+source(fs::path(GITROOT, "libraries.R"))
+source(fs::path(GITROOT, "libraries_ts.R"))
+source(fs::path(GITROOT, "plot_helpers.R"))
+
+# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
+# source(fs::path(QROOT, "setup.R"))
+
+```
+
+```{r}
+
+pop <- readRDS(fs::path(DDATA, "ny_state_population_estimates_1970_2024.rds"))
+
+```
+
+
 ## Major challenges
 
 -  A cloudy rear-view mirror -- hard to know the future when we don't know the present
@@ -31,6 +61,106 @@ Often it's important to consider these questions separately.
 -  The economy we measure is not (quite) the economy we tax
 
 # Where we are now
+
+## Population
+
+```{r}
+
+p1 <- pop |>
+  filter(variable == "popestimate") |>
+  ggplot(aes(year, value)) +
+  geom_line(colour = "blue") +
+  scale_y_continuous(
+    name = "millions",
+    labels = scales::label_comma(scale = 1e-6, accuracy = .1)
+  ) +
+  scale_x_continuous(name = NULL) +
+  ggtitle("New York State Post-Census Population Estimates") +
+  labs(caption = "Source: U.S. Census Bureau Population Estimates Program") +
+  theme_presentation_small()
+
+p2 <- p1
+p3 <- p1
+p4 <- p1
+
+```
+
+
+```{r}
+
+f <- function(component) {
+  p <- pop |>
+    filter(variable == component) |>
+    ggplot(aes(year, value)) +
+    geom_line(colour = "blue") +
+    scale_y_continuous(
+      name = "millions",
+      labels = scales::label_comma(scale = 1e-6, accuracy = .1)
+    ) +
+    scale_x_continuous(name = NULL) +
+    ggtitle("New York State Post-Census Population Estimates") +
+    labs(caption = "Source: U.S. Census Bureau Population Estimates Program") +
+    theme_presentation_small()
+  p
+}
+
+f("naturalchg")
+
+```
+
+
+```{r}
+#| eval: false
+
+# keep <- c(
+#   "popestimate",
+#   "naturalchg",
+#   "domesticmig",
+#   "internationalmig",
+#   "npopchg",
+#   "residual"
+# )
+
+keep <- c(
+  "naturalchg",
+  "domesticmig",
+  "internationalmig"
+)
+
+pop |>
+  filter(variable %in% keep) |>
+  ggplot(aes(x = factor(year), y = value, fill = variable)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "New York State Population Change Components",
+    x = "Year",
+    y = "Population Change",
+    fill = "Component"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+pop |>
+  filter(variable %in% keep) |>
+  ggplot(aes(x = variable, y = value, fill = factor(year))) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "New York State Population Change Components",
+    x = "Year",
+    y = "Population Change",
+    fill = "Component"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+```{r}
+#| label: four-plots
+#| fig-width: 18
+#| fig-height: 10
+
+(p1 + p2) / (p3 + p4)
+```
 
 ## Employment
 
