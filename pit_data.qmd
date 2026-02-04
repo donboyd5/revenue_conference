@@ -1,0 +1,110 @@
+# Personal income tax data
+
+https://data.ny.gov/Government-Finance/Personal-Income-Tax-Filers-Summary-Dataset-2-Major/f3t7-zvbx
+
+
+## Setup
+
+```{r}
+#| label: setup
+
+rm(list = ls())
+GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+DDATA <- fs::path(GITROOT, "data")
+DQCEW <- fs::path("D:/", "data", "qcew")
+DCES <- fs::path("D:/", "data", "ces") # current employment statistics
+DCESNY <- fs::path(DCES, "cesny") # current employment statistics ny state
+DPITNY <- fs::path("D:/", "data", "nyspit") # current employment statistics
+
+source(fs::path(GITROOT, "libraries.R"))
+source(fs::path(GITROOT, "libraries_ts.R"))
+# https://cran.r-project.org/web/packages/BLSloadR/BLSloadR.pdf
+
+# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
+# source(fs::path(QROOT, "setup.R"))
+
+```
+
+## Get data
+
+```{r}
+
+fname <- "Personal_Income_Tax_Filers,_Summary_Dataset_2_-_Major_Items_and_Income_&_Deduction_Components_by_Place_of_Residence_and_Broad_Income_Range__Beginning_Tax_Year_2015_20260204.csv"
+
+df1 <- vroom::vroom(fs::path(DPITNY, fname))
+
+vnames <- tibble(vnum = 1:ncol(df), vdesc = names(df))
+colnames <- c(
+  "taxyear",
+  "rstat",
+  "por",
+  "county",
+  "state",
+  "country",
+  "agirange",
+  "notes",
+  "numret",
+  "fed_nyagi",
+  "nysagi",
+  "fed_idagi",
+  "nysd",
+  "nyid",
+  "dedused",
+  "depexempt_n",
+  "depexempt_amt",
+  "ti",
+  "taxbc",
+  "credits",
+  "taxliab",
+  "wages",
+  "interest",
+  "dividends",
+  "capgains",
+  "caploss",
+  "rrpetgain",
+  "rrpetloss",
+  "busfarmgain",
+  "busfarmloss",
+  "pensions",
+  "otherinc",
+  "fedadjust",
+  "addbonds",
+  "addperscontrib",
+  "addcollege",
+  "addother",
+  "subsaltref",
+  "subgovpension",
+  "socsocsec",
+  "subfedbonds",
+  "subpension",
+  "subcollege",
+  "subother",
+  "idmedical",
+  "idtaxes",
+  "idinterest",
+  "idcharitable",
+  "idother",
+  "idfederal",
+  "pitsubadjust",
+  "nyadds",
+  "nyidadjust",
+  "sortplace",
+  "sortincome"
+)
+colnames <- c(colnames, rep(NA, nrow(vnames) - length(colnames)))
+
+vnames <- vnames |>
+  mutate(vname = colnames)
+vnames
+
+rename_vec <- vnames |>
+  select(vname, vdesc) |>
+  deframe()
+
+df2 <- df1 |>
+  rename(any_of(rename_vec))
+glimpse(df2)
+
+saveRDS(df2, fs::path(DPITNY, "nypitds2.rds"))
+
+```
