@@ -1,0 +1,170 @@
+# Prepare population data
+
+[Annual Population Estimates for New York State and Counties: Beginning 1970](https://data.ny.gov/Government-Finance/Annual-Population-Estimates-for-New-York-State-and/krt9-ym2k/about_data)
+
+
+url <- "https://data.ny.gov/api/views/6k74-dgkb/rows.csv?accessType=DOWNLOAD"
+
+url <- "https://data.ny.gov/api/views/krt9-ym2k/rows.csv?accessType=DOWNLOAD"
+
+https://www.census.gov/programs-surveys/popest/data/data-sets.html
+https://data.ny.gov/Government-Finance/Annual-Population-Estimates-for-New-York-State-and/krt9-ym2k/
+
+## Setup
+
+```{r}
+#| label: setup
+
+rm(list = ls())
+GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+DDATA <- fs::path(GITROOT, "data")
+DQCEW <- fs::path("D:/", "data", "qcew")
+
+source(fs::path(GITROOT, "libraries.R"))
+source(fs::path(GITROOT, "libraries_ts.R"))
+source(fs::path(GITROOT, "plot_helpers.R"))
+
+# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
+# source(fs::path(QROOT, "setup.R"))
+
+```
+
+
+
+```{r}
+# get_estimates(
+#   geography = c(
+#     "us",
+#     "region",
+#     "division",
+#     "state",
+#     "county",
+#     "county subdivision",
+#     "place/balance (or part)",
+#     "place",
+#     "consolidated city",
+#     "place (or part)",
+#     "metropolitan statistical area/micropolitan statistical area",
+#     "cbsa",
+#     "metropolitan division",
+#     "combined statistical area"
+#   ),
+#   product = NULL,
+#   variables = NULL,
+#   breakdown = NULL,
+#   breakdown_labels = FALSE,
+#   vintage = 2024,
+#   year = vintage,
+#   state = NULL,
+#   county = NULL,
+#   time_series = FALSE,
+#   output = "tidy",
+#   geometry = FALSE,
+#   keep_geo_vars = FALSE,
+#   shift_geo = FALSE,
+#   key = NULL,
+#   show_call = FALSE,
+#   ...
+# )
+
+df <- get_estimates(
+  geography = "state",
+  vintage = 2025,
+  state = "NY",
+  time_series = TRUE,
+  output = "tidy",
+  keep_geo_vars = TRUE
+)
+
+pop <- df |>
+  rename_with(tolower) |>
+  mutate(variable = tolower(variable))
+
+saveRDS(pop, fs::path(DDATA, "ny_state_population_estimates_1970_2024.rds"))
+
+pop <- readRDS(fs::path(DDATA, "ny_state_population_estimates_1970_2024.rds"))
+
+dfw <- pop |>
+  pivot_wider(names_from = variable, values_from = value)
+count(df2, variable)
+
+keep <- c(
+  "popestimate",
+  "naturalchg",
+  "domesticmig",
+  "internationalmig",
+  "npopchg",
+  "residual"
+)
+
+
+pdata <- df2 |>
+  filter(variable %in% keep) |>
+  pivot_wider(names_from = variable, values_from = value) |>
+  mutate(
+    check = internationalmig + domesticmig + naturalchg + residual,
+    change = popestimate - lag(popestimate)
+  )
+
+pdata |>
+  select(year, npopchg, naturalchg, internationalmig, domesticmig) |>
+  pivot_longer(
+    cols = -year,
+    names_to = "component",
+    values_to = "value"
+  ) |>
+  ggplot(aes(x = factor(year), y = value, fill = component)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "New York State Population Change Components",
+    x = "Year",
+    y = "Population Change",
+    fill = "Component"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+keep <- c(
+  "popestimate",
+  "naturalchg",
+  "domesticmig",
+  "internationalmig",
+  "npopchg",
+  "residual"
+)
+
+df2 |>
+  filter(variable %in% keep)
+
+p1 <- pop |>
+  filter(variable == "popestimate") |>
+  ggplot(aes(year, value)) +
+  geom_line(colour = "blue") +
+  scale_y_continuous(
+    name = "millions",
+    labels = scales::label_comma(scale = 1e-6, accuracy = .1)
+  ) +
+  scale_x_continuous(name = NULL) +
+  ggtitle("New York State Post-Census Population Estimates") +
+  labs(caption = "Source: U.S. Census Bureau") +
+  theme_presentation()
+
+p1
+p2 <- p1
+p3 <- p1
+p4 <- p1
+
+(p1 + p2) / (p3 + p4)
+
+```
+
+
+
+```{r}
+#| label: fig-four-plots
+#| fig-width: 14
+#| fig-height: 10
+
+(p1 + p2) / (p3 + p4)
+
+```
