@@ -1,0 +1,50 @@
+
+```{r}
+#| label: setup
+
+rm(list = ls())
+GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+DDATA <- fs::path(GITROOT, "data")
+DQCEW <- fs::path("D:/", "data", "qcew")
+DCES <- fs::path("D:/", "data", "ces") # current employment statistics
+DCESNY <- fs::path(DCES, "cesny") # current employment statistics ny state
+DPITNY <- fs::path("D:/", "data", "nyspit") # current employment statistics
+DBEA <- fs::path("D:/", "data", "bea") # bea data
+
+source(fs::path(GITROOT, "libraries.R"))
+source(fs::path(GITROOT, "libraries_ts.R"))
+# https://cran.r-project.org/web/packages/BLSloadR/BLSloadR.pdf
+
+# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
+# source(fs::path(QROOT, "setup.R"))
+
+```
+
+## Get data
+
+
+
+
+```{r}
+
+# https://github.us-bea/bea.R
+# library(bea.R)
+# beaParams(Sys.getenv("BEA_API_KEY"), 'RegionalData')
+
+zfname <- "SAINC.zip"
+fname <- "SAINC4_NY_1929_2024.csv"
+zpath <- fs::path(DBEA, zfname)
+
+df <- vroom::vroom(unz(zpath, fname), col_types = cols(.default = "c"))
+glimpse(df)
+skimr::skim_without_charts(df)
+
+df2 <- df |>
+  rename_with(tolower) |>
+  filter(!is.na(geoname)) |>
+  select(-c(region, tablename, industryclassification))
+
+df3 <- df2 |>
+  pivot_longer(cols = c("1929":"2024"), names_to = "year", values_to = "value")
+
+```
