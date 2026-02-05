@@ -22,7 +22,7 @@ fname <- "Personal_Income_Tax_Filers,_Summary_Dataset_2_-_Major_Items_and_Income
 
 df1 <- vroom::vroom(fs::path(DPITNY, fname))
 
-vnames <- tibble(vnum = seq_len(ncol(df)), vdesc = names(df))
+vnames <- tibble(vnum = seq_len(ncol(df1)), vdesc = names(df1))
 colnames <- c(
   "taxyear",
   "rstat",

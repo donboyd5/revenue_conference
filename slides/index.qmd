@@ -51,6 +51,7 @@ source(fs::path(GITROOT, "plot_helpers.R"))
 
 pop <- readRDS(fs::path(DDATA, "ny_state_population_estimates_1970_2024.rds"))
 nyspi <- readRDS(fs::path(DDATA, "bea_nyspi.rds"))
+nysagi <- readRDS(fs::path(DPITNY, "nypitds2.rds"))
 
 ```
 
