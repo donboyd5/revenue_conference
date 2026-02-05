@@ -35,15 +35,7 @@ Often it's important to consider these questions separately.
 
 rm(list = ls())
 GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
-DDATA <- fs::path(GITROOT, "data")
-DQCEW <- fs::path("D:/", "data", "qcew")
-
-source(fs::path(GITROOT, "libraries.R"))
-source(fs::path(GITROOT, "libraries_ts.R"))
-source(fs::path(GITROOT, "plot_helpers.R"))
-
-# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
-# source(fs::path(QROOT, "setup.R"))
+source(fs::path(GITROOT, "setup.R"))
 
 ```
 
