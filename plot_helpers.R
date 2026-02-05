@@ -60,3 +60,6 @@ theme_presentation_small <- function(
       plot.margin = margin(t = 0.2, r = 0.2, b = 0.2, l = 0.2, unit = "cm")
     )
 }
+
+update_geom_defaults("line", list(linewidth = 2))
+update_geom_defaults("point", list(size = 3))
