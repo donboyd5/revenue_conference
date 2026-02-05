@@ -20,18 +20,7 @@ Phillippa Dunne
 
 rm(list = ls())
 GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
-DDATA <- fs::path(GITROOT, "data")
-DQCEW <- fs::path("D:/", "data", "qcew")
-DCES <- fs::path("D:/", "data", "ces") # current employment statistics
-DCESNY <- fs::path(DCES, "cesny") # current employment statistics ny state
-
-source(fs::path(GITROOT, "libraries.R"))
-source(fs::path(GITROOT, "libraries_ts.R"))
-# https://cran.r-project.org/web/packages/BLSloadR/BLSloadR.pdf
-library("BLSloadR")
-
-# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
-# source(fs::path(QROOT, "setup.R"))
+source(fs::path(GITROOT, "setup.R"))
 
 ```
 

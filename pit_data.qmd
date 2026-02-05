@@ -10,18 +10,7 @@ https://data.ny.gov/Government-Finance/Personal-Income-Tax-Filers-Summary-Datase
 
 rm(list = ls())
 GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
-DDATA <- fs::path(GITROOT, "data")
-DQCEW <- fs::path("D:/", "data", "qcew")
-DCES <- fs::path("D:/", "data", "ces") # current employment statistics
-DCESNY <- fs::path(DCES, "cesny") # current employment statistics ny state
-DPITNY <- fs::path("D:/", "data", "nyspit") # current employment statistics
-
-source(fs::path(GITROOT, "libraries.R"))
-source(fs::path(GITROOT, "libraries_ts.R"))
-# https://cran.r-project.org/web/packages/BLSloadR/BLSloadR.pdf
-
-# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
-# source(fs::path(QROOT, "setup.R"))
+source(fs::path(GITROOT, "setup.R"))
 
 ```
 
@@ -33,7 +22,7 @@ fname <- "Personal_Income_Tax_Filers,_Summary_Dataset_2_-_Major_Items_and_Income
 
 df1 <- vroom::vroom(fs::path(DPITNY, fname))
 
-vnames <- tibble(vnum = 1:ncol(df), vdesc = names(df))
+vnames <- tibble(vnum = seq_len(ncol(df)), vdesc = names(df))
 colnames <- c(
   "taxyear",
   "rstat",

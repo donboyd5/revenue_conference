@@ -23,14 +23,7 @@ The New York State Department of Labor (NYSDOL) provides a version of the BLS Qu
 
 rm(list = ls())
 GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
-DDATA <- fs::path(GITROOT, "data")
-DQCEW <- fs::path("D:/", "data", "qcew")
-
-source(fs::path(GITROOT, "libraries.R"))
-source(fs::path(GITROOT, "libraries_ts.R"))
-
-# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
-# source(fs::path(QROOT, "setup.R"))
+source(fs::path(GITROOT, "setup.R"))
 
 ```
 
@@ -196,7 +189,6 @@ tmp |>
     labels = scales::percent_format(accuracy = 1)
   ) +
   theme_bw()
-
 
 
 ```

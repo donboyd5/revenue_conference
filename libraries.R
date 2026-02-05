@@ -11,9 +11,6 @@ library(lobstr)
 library(microbenchmark)
 library(zip)
 
-# data
-library(tidycensus)
-
 # tools
 library(vroom)
 library(readxl)
