@@ -25,7 +25,7 @@ df1 <- vroom::vroom(fs::path(DPITNY, fname))
 vnames <- tibble(vnum = seq_len(ncol(df1)), vdesc = names(df1))
 #   "fed_idagi",
 colnames <- c(
-  "taxyear",
+  "year",
   "rstat",
   "por",
   "county",
@@ -64,7 +64,7 @@ colnames <- c(
   "addother",
   "subsaltref",
   "subgovpension",
-  "socsec",
+  "subsocsec",
   "subfedbonds",
   "subpension",
   "subcollege",
@@ -92,9 +92,13 @@ rename_vec <- vnames |>
   deframe()
 
 df2 <- df1 |>
-  rename(any_of(rename_vec))
+  rename(any_of(rename_vec)) |>
+  mutate(across(c(year, numret, sortplace, sortincome), as.integer))
 glimpse(df2)
 
-saveRDS(df2, fs::path(DPITNY, "nypitds2.rds"))
+```
 
+
+```{r}
+saveRDS(df2, fs::path(DPITNY, "nypitds2.rds"))
 ```
