@@ -16,6 +16,8 @@ format:
   # pdf:
   #   output-file: slides.pdf
 number-sections: false
+execute:
+  output: false
 # resources:
 #   - demo.pdf
 # quarto render index.qmd --to pdf
@@ -137,6 +139,7 @@ p4 <- f(
 
 ```{r}
 #| label: pop-change-facets
+#| output: true
 #| fig-width: 18
 #| fig-height: 10
 
@@ -233,13 +236,151 @@ pop |>
 
 ```
 
-## PIT and personal income
+# Linking economic and tax-revenue forecasts
+
+```{r}
+#| label: get-agi-components
+
+# nysagi
+# nyspi
+
+agi2 <- nysagi |>
+  filter(
+    rstat == "All Filers",
+    por == "All Places",
+    county == "All Places",
+    state == "All",
+    country == "All"
+  ) |>
+  mutate(taxyear = as.integer(taxyear)) |>
+  select(taxyear, sortincome, agirange, numret:nyidadjust) |>
+  arrange(sortincome, taxyear)
+
+agibase <- agi2 |>
+  filter(sortincome == 16) |>
+  select(year = taxyear, nysagi) |>
+  mutate(variable = "nysagi", value = nysagi) |>
+  select(variable, year, value)
+
+# agi2 |> filter(sortincome == 16) |> ggplot(aes(taxyear, nysagi)) + geom_line()
+
+pibase <- nyspi |>
+  filter(linecode == 10, year %in% 2015:2023) |>
+  mutate(
+    variable = "nyspi",
+    year = as.integer(year),
+    value = as.numeric(value) * 1e6
+  ) |>
+  select(variable, year, value)
+
+piagi <- bind_rows(pibase, agibase)
+
+# piagi |> ggplot(aes(year, value, colour = variable)) + geom_line()
+# piagi |>
+#   pivot_wider(names_from = variable, values_from = value) |>
+#   mutate(ratio = nyspi / nysagi) |>
+#   ggplot(aes(year, ratio)) +
+#   geom_line()
+# pi is about 30-50% larger than agi depending on year
+
+pdata <- piagi |>
+  arrange(variable, year) |>
+  mutate(pchya = value / lag(value) - 1, .by = variable) |>
+  filter(year %in% 2016:2023)
+
+```
+
+<!-- ## Economic and tax-base variables often diverge -->
+
+## <span style="font-size: 0.8em;">Economic and tax-base variables often diverge</span>
+
+```{r}
+#| label: piagi-growth-plot
+#| output: true
+#| fig-width: 18
+#| fig-height: 10
+
+pdata |>
+  mutate(variable = factor(variable, levels = c("nyspi", "nysagi"))) |>
+  ggplot(aes(year, pchya, colour = variable)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  scale_color_manual(
+    values = c("nysagi" = "#0072B2", "nyspi" = "#E69F00"),
+    labels = c("nysagi" = "Adjusted Gross Income", "nyspi" = "Personal Income")
+  ) +
+  scale_y_continuous(
+    name = "% change",
+    breaks = seq(-.1, .2, .02),
+    labels = scales::label_percent(accuracy = 0.1)
+  ) +
+  scale_x_continuous(name = NULL, breaks = 2015:2024) +
+  ggtitle("New York State Personal Income and AGI Growth Rates") +
+  labs(caption = "Sources: BEA and NYS Department of Taxation and Finance") +
+  theme_presentation() +
+  theme(
+    legend.title = element_blank(),
+    legend.position = c(0.85, 0.85),
+    legend.background = element_rect(fill = "white", color = "gray80"),
+    legend.key.size = unit(1.5, "lines")
+  )
+
+```
+
+
+## AGI vs. Personal Income Components
 
 ```{r}
 
-nypitds2 <- readRDS(fs::path(DPITNY, "nypitds2.rds"))
+# nysagi
+# nyspi
+# wages, interest, dividends, capgains, caploss, rrpetgain, rrpetloss, busfarmgain, bus
+
+agi2 <- nysagi |>
+  filter(
+    rstat == "All Filers",
+    por == "All Places",
+    county == "All Places",
+    state == "All",
+    country == "All"
+  ) |>
+  mutate(taxyear = as.integer(taxyear)) |>
+  select(taxyear, sortincome, agirange, numret:nyidadjust) |>
+  arrange(sortincome, taxyear)
+
+agibase <- agi2 |>
+  filter(sortincome == 16) |>
+  select(year = taxyear, nysagi) |>
+  mutate(variable = "nysagi", value = nysagi) |>
+  select(variable, year, value)
+
+pibase <- nyspi |>
+  filter(linecode %in% c(10, 50), year %in% 2015:2023) |>
+  mutate(
+    src = "nyspi",
+    variable = ifelse(linecode == 10, "nyspi", "wages"),
+    year = as.integer(year),
+    value = as.numeric(value) * 1e6
+  ) |>
+  select(src, variable, year, value) |>
+  pivot_wider(names_from = variable, values_from = value) |>
+  mutate(other = nyspi - wages) |>
+  pivot_longer(cols = -c(src, year), names_to = "variable", values_to = "value")
+
+piagi <- bind_rows(pibase, agibase)
+
+piagi |> ggplot(aes(year, value, colour = variable)) + geom_line()
+piagi |>
+  pivot_wider(names_from = variable, values_from = value) |>
+  mutate(ratio = nyspi / nysagi) |>
+  ggplot(aes(year, ratio)) +
+  geom_line()
 
 ```
+
+
+
 
 
 ## Employment

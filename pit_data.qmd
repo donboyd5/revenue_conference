@@ -23,6 +23,7 @@ fname <- "Personal_Income_Tax_Filers,_Summary_Dataset_2_-_Major_Items_and_Income
 df1 <- vroom::vroom(fs::path(DPITNY, fname))
 
 vnames <- tibble(vnum = seq_len(ncol(df1)), vdesc = names(df1))
+#   "fed_idagi",
 colnames <- c(
   "taxyear",
   "rstat",
@@ -35,7 +36,6 @@ colnames <- c(
   "numret",
   "fed_nyagi",
   "nysagi",
-  "fed_idagi",
   "nysd",
   "nyid",
   "dedused",
@@ -57,13 +57,14 @@ colnames <- c(
   "pensions",
   "otherinc",
   "fedadjust",
+  "fedagi",
   "addbonds",
   "addperscontrib",
   "addcollege",
   "addother",
   "subsaltref",
   "subgovpension",
-  "socsocsec",
+  "socsec",
   "subfedbonds",
   "subpension",
   "subcollege",
