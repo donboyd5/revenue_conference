@@ -16,6 +16,8 @@ format:
   # pdf:
   #   output-file: slides.pdf
 number-sections: false
+bibliography: references.bib
+nocite: '@*'
 execute:
   output: false
 # quarto render index.qmd --to pdf
@@ -518,7 +520,10 @@ Table or bar chart -- AGI and personal income
 
 ## Timing
 
+## References
 
+::: {#refs style="font-size: 0.7em;"}
+:::
 
 
 
