@@ -120,7 +120,7 @@ df3 <- df2 |>
   left_join(owner_factors, by = join_by(owner)) |>
   mutate(
     areatype = str_to_lower(areatype),
-    empq = pmean(mnth1emp, mnth2emp, mnth2emp),
+    empq = pmean(mnth1emp, mnth2emp, mnth3emp),
     date = yq(paste(year, quarter, sep = "-"))
   )
 glimpse(df3)
@@ -140,7 +140,7 @@ df4 <- df3 |>
     ownershort,
     mnth1emp,
     mnth2emp,
-    mnth2emp,
+    mnth3emp,
     empq,
     totwage
   )
