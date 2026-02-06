@@ -61,5 +61,31 @@ theme_presentation_small <- function(
     )
 }
 
+
+theme_rotate <- function(angle = 90, axis = "x", hjust = 1, vjust = NULL) {
+  # Auto-adjust vjust if not specified
+  if (is.null(vjust)) {
+    vjust <- if (angle == 90) 0.5 else 1
+  }
+
+  # Build theme based on axis
+  if (axis == "x") {
+    theme(
+      axis.text.x = element_text(angle = angle, hjust = hjust, vjust = vjust)
+    )
+  } else if (axis == "y") {
+    theme(
+      axis.text.y = element_text(angle = angle, hjust = hjust, vjust = vjust)
+    )
+  } else if (axis == "both") {
+    theme(
+      axis.text.x = element_text(angle = angle, hjust = hjust, vjust = vjust),
+      axis.text.y = element_text(angle = angle, hjust = hjust, vjust = vjust)
+    )
+  } else {
+    stop("axis must be 'x', 'y', or 'both'")
+  }
+}
+
 update_geom_defaults("line", list(linewidth = 2))
 update_geom_defaults("point", list(size = 3))
