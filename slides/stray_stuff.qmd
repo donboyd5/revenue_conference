@@ -1,0 +1,129 @@
+
+
+
+
+
+<!-- ## New York State Post-Census Population Estimates -->
+
+```{r}
+#| label: four-plots-setup
+#| eval: false
+
+p1 <- pop |>
+  filter(variable == "popestimate") |>
+  ggplot(aes(year, value)) +
+  geom_line(colour = "blue") +
+  scale_y_continuous(
+    name = "millions",
+    labels = scales::label_comma(scale = 1e-6, accuracy = .1)
+  ) +
+  scale_x_continuous(name = NULL) +
+  ggtitle("Population") +
+  labs(caption = "Source: U.S. Census Bureau Population Estimates Program") +
+  theme_presentation_small()
+
+
+```
+
+
+```{r}
+#| eval: false
+
+f <- function(component, title, colour = "blue") {
+  p <- pop |>
+    filter(variable == component) |>
+    ggplot(aes(x = factor(year), y = value)) +
+    geom_col_pattern(
+      fill = colour,
+      position = "dodge",
+      pattern = "crosshatch",
+      pattern_colour = colour
+    ) +
+    geom_hline(yintercept = 0) +
+    scale_x_discrete(name = NULL) +
+    scale_y_continuous(
+      name = "population change",
+      labels = scales::label_comma(scale = 1, accuracy = 1),
+      limits = c(-350e3, 350e3)
+    ) +
+    ggtitle(title) +
+    labs(caption = "Source: U.S. Census Bureau Population Estimates Program") +
+    theme_presentation_small()
+  p
+}
+
+p2 <- f(
+  "naturalchg",
+  title = "Natural Change (Births minus Deaths)",
+  colour = "darkgreen"
+)
+
+p3 <- f(
+  "domesticmig",
+  title = "Domestic Migration",
+  colour = "red"
+)
+p4 <- f(
+  "internationalmig",
+  title = "International Migration",
+  colour = "blue"
+)
+
+```
+
+
+```{r}
+#| label: four-plots
+#| fig-width: 18
+#| fig-height: 10
+#| eval: false
+
+(p1 + p2) / (p3 + p4)
+```
+
+
+
+```{r}
+#| eval: false
+
+# keep <- c(
+#   "popestimate",
+#   "naturalchg",
+#   "domesticmig",
+#   "internationalmig",
+#   "npopchg",
+#   "residual"
+# )
+
+# keep <- c(
+#   "naturalchg",
+#   "domesticmig",
+#   "internationalmig"
+# )
+
+# pop |>
+#   filter(variable %in% keep) |>
+#   ggplot(aes(x = factor(year), y = value, fill = "blue")) +
+#   geom_col(position = "dodge") +
+#   geom_hline(yintercept = 0) +
+#   labs(
+#     title = "New York State Population Change Components",
+#     x = "Year",
+#     y = "Population Change",
+#     fill = "Component"
+#   ) +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# pop |>
+#   filter(variable %in% keep) |>
+#   ggplot(aes(x = variable, y = value, fill = factor(year))) +
+#   geom_col(position = "dodge") +
+#   labs(
+#     title = "New York State Population Change Components",
+#     x = "Year",
+#     y = "Population Change",
+#     fill = "Component"
+#   ) +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
