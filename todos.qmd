@@ -1,5 +1,18 @@
 # TODO:
 
+Worries and follow ups:
+
+-  PTET
+-  Lucy
+-  CBO
+-  Philippa Dunne
+-
+
+Capital gains
+
+data: https://taxfoundation.org/data/all/federal/federal-capital-gains-tax-collections-historical-data/
+
+
 Issues and risks
 
 -  Population growth, immigration, and employment growth
