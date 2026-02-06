@@ -2,7 +2,7 @@
 title: "New York Tax Revenue and the Economy"
 subtitle: "NYS Consensus Economic and Revenue Forecasting Conference"
 author: "Don Boyd"
-date: "2026-02-23"
+date: "2026-02-27"
 date-format: long
 format:
   revealjs:
@@ -23,6 +23,12 @@ execute:
 # quarto render index.qmd --to pdf
 # quarto render index.qmd --to revealjs
 ---
+
+## Revenue forecaster woes
+
+-  We don't yet know the present -- sometimes substantial data lags
+-  The past isn't what it used to be - potentially large data revisions
+-  The
 
 ## Key revenue forecasting questions
 
@@ -49,6 +55,7 @@ nyspi <- readRDS(fs::path(DDATA, "bea_nyspi.rds"))
 nysagi <- readRDS(fs::path(DPITNY, "nypitds2.rds"))
 qcew <- readRDS(fs::path(DQCEW, "qcewstcoq.rds")) # takes a long time, winnow it down
 ces <- readRDS(fs::path(DCES, "ces_data_2026-02-03.rds")) # same
+ebench <- readRDS(fs::path(DFEDNY, "early-benchmarked-employment_data.rds"))
 
 ```
 
@@ -498,6 +505,7 @@ piagi |>
 
 qcew
 ces
+ebench
 
 qcew2 <- qcew |>
   filter(areatype == "state", naics == "00", ownerf == 1) |>
@@ -517,6 +525,12 @@ ces2 <- ces |>
   mutate(src = ifelse(seasonal == "U", "ces_ns", "ces_s")) |>
   select(date, src, value)
 
+ebench2 <- ebench |>
+  filter(area == "ny") |>
+  mutate(src = "ebench") |>
+  select(date, src, value = emp)
+
+
 skimr::skim_without_charts(ces2)
 
 qcew2 |>
@@ -524,7 +538,7 @@ qcew2 |>
   geom_line() +
   geom_point()
 
-comp <- bind_rows(qcew2, ces2) |>
+comp <- bind_rows(qcew2, ces2, ebench2) |>
   filter(year(date) >= 2000)
 
 comp |>
@@ -546,8 +560,8 @@ wide |>
   geom_line() +
   geom_point()
 
-library(feasts)
-library(tsibble)
+# library(feasts)
+# library(tsibble)
 
 # Convert to tsibble (time series tibble)
 # Convert to tsibble with monthly interval
@@ -587,19 +601,23 @@ comp |>
   geom_line() +
   geom_point()
 
-comp |>
+pdata <- comp |>
   arrange(date) |>
   mutate(pchya = value / lag(value, 12) - 1, .by = src) |>
   # filter(year(date) >= 2022, src != "qcew") |>
-  filter(year(date) >= 2022) |>
+  filter(year(date) >= 2022)
+
+pdata |>
+  filter(src %in% c("ces_s", "ebench")) |>
   ggplot(aes(date, pchya, colour = src)) +
   geom_line() +
   geom_point() +
+  geom_hline(yintercept = 0, linetype = "solid", color = "blue") +
   scale_y_continuous(
     name = "% change",
     labels = scales::label_percent(accuracy = 0.1),
-    breaks = seq(-.1, .2, .005),
-    limits = c(0, NA)
+    breaks = seq(-.1, .2, .005) #,
+    # limits = c(0, NA)
   ) +
   ggtitle("NYS employment % change vs. year ago") +
   scale_x_date(name = NULL, date_breaks = "3 months", date_labels = "%b %Y") +

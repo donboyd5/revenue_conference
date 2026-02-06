@@ -115,6 +115,40 @@ tmp |>
 
 ```
 
+## New York Fed early benchmark data
+
+```{r}
+
+empnyfed1 <- vroom::vroom(fs::path(
+  DFEDNY,
+  "early-benchmarked-employment_data.csv"
+))
+
+empnyfed2 <- empnyfed1 |>
+  rename_with(tolower) |>
+  pivot_longer(
+    cols = -date,
+    names_to = "area",
+    values_to = "emp"
+  ) |>
+  mutate(
+    date = lubridate::mdy(date),
+    date = floor_date(date, "month"),
+    type = "early_bench",
+    area = str_remove(area, "_bench")
+  ) |>
+  select(date, type, area, emp)
+
+saveRDS(empnyfed2, fs::path(DFEDNY, "early-benchmarked-employment_data.rds"))
+
+empnyfed2 |>
+  filter(area == "ny") |>
+  ggplot(aes(date, emp)) +
+  geom_line() +
+  geom_point() +
+  theme_presentation()
+
+```
 
 ## Data from NY State
 
