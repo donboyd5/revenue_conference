@@ -24,18 +24,14 @@ execute:
 # quarto render index.qmd --to revealjs
 ---
 
-## Revenue forecaster woes
+## Revenue forecasters' woes
 
--  We don't yet know the present -- sometimes substantial data lags
+-  We don't know the present -- substantial data lags
 -  The past isn't what it used to be - potentially large data revisions
--  The
+-  The economy we measure is not the economy we tax
+-  We must forecast not just what people owe, but when they will pay it
 
-## Key revenue forecasting questions
-
--   What will they owe?
--   When will they pay it?
-
-Often it's important to consider these questions separately.
+Each woe increases the risk that financial managers face.
 
 
 ```{r}
@@ -60,16 +56,9 @@ ebench <- readRDS(fs::path(DFEDNY, "early-benchmarked-employment_data.rds"))
 ```
 
 
-## Major challenges
-
--  A cloudy rear-view mirror -- hard to know the future when we don't know the present
--  Forecasters stand on shifting sands -- economic data sometimes are revised substantially
--  The economy we measure is not (quite) the economy we tax
-
 # Where we are now
 
-
-## Post-Census Population Change
+## Population change since the 2020 Census
 
 ```{r}
 #| label: pop-change-facets
@@ -124,6 +113,76 @@ pop |>
 
 ```
 
+
+## Employment
+
+```{r}
+#| label: employment-bench-nonbench-pchya
+
+# compare NY Fed early benchmarked employment data to CES seasonally adjusted data
+
+cesbase <- ces |>
+  filter(
+    state_code == "36",
+    area_code == "00000",
+    supersector_code == "00",
+    data_type_code == "01",
+    seasonal == "S"
+  ) |>
+  mutate(src = "ces") |>
+  select(date, src, value)
+
+ebenchbase <- ebench |>
+  filter(area == "ny") |>
+  mutate(src = "ebench") |>
+  select(date, src, value = emp)
+
+pdata <- bind_rows(cesbase, ebenchbase) |>
+  filter(year(date) >= 2000) |>
+  arrange(date) |>
+  mutate(pchya = value / lag(value, 12) - 1, .by = src)
+
+# for a table
+pchya <- pdata |>
+  mutate(year = year(date)) |>
+  summarise(avgemp = mean(value), .by = c(year, src)) |>
+  arrange(year, src) |>
+  mutate(pchya = avgemp / lag(avgemp) - 1, .by = src)
+
+  ```
+
+  ```{r}
+#| label: show-employment-benchmark
+#| output: true
+
+# professional colors consistent with other plots
+emp_colors <- c(ces = "#0072B2", ebench = "#009E73")
+emp_labels <- c(
+  ces = "Official employment (CES)",
+  ebench = "Early benchmark (NY Fed)"
+)
+
+p <- pdata |>
+  filter(year(date) >= 2022) |>
+  ggplot(aes(date, pchya, colour = src)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 1) +
+  geom_hline(yintercept = 0, linetype = "solid", color = "blue") +
+  scale_colour_manual(values = emp_colors, labels = emp_labels, name = NULL) +
+  scale_y_continuous(
+    name = "% change",
+    labels = scales::label_percent(accuracy = 0.1),
+    breaks = seq(-0.1, 0.2, 0.005)
+  ) +
+  ggtitle("NYS employment % change vs. year ago") +
+  scale_x_date(name = NULL, date_breaks = "3 months", date_labels = "%b %Y") +
+  theme_presentation() +
+  theme_rotate(angle = 45) +
+  theme(legend.title = element_blank())
+
+p
+
+```
 
 # Linking economic and tax-revenue forecasts
 
@@ -200,7 +259,7 @@ pdata |>
   ) +
   scale_y_continuous(
     name = "% change",
-    breaks = seq(-.1, .2, .02),
+    breaks = seq(-0.1, 0.2, 0.02),
     labels = scales::label_percent(accuracy = 0.1)
   ) +
   scale_x_continuous(name = NULL, breaks = 2015:2024) +
@@ -358,7 +417,7 @@ piagi |>
   ) +
   scale_y_continuous(
     name = "% change",
-    breaks = seq(-.6, .6, .1),
+    breaks = seq(-0.6, 0.6, 0.1),
     labels = scales::label_percent(accuracy = 1)
   ) +
   scale_x_continuous(name = NULL, breaks = 2015:2024) +
@@ -416,7 +475,7 @@ piagi |>
   ) +
   scale_y_continuous(
     name = "% change",
-    breaks = seq(-.6, .6, .1),
+    breaks = seq(-0.6, 0.6, 0.1),
     labels = scales::label_percent(accuracy = 1)
   ) +
   scale_x_continuous(name = NULL, breaks = 2015:2024) +
@@ -482,7 +541,7 @@ piagi |>
   ) +
   scale_y_continuous(
     name = "% change",
-    breaks = seq(-.6, .6, .1),
+    breaks = seq(-0.6, 0.6, 0.1),
     labels = scales::label_percent(accuracy = 1)
   ) +
   scale_x_continuous(name = NULL, breaks = 2015:2024) +
@@ -498,78 +557,44 @@ piagi |>
 
 ```
 
+## Revenue
 
-## Employment
+# Another section
+
+## The economy we tax
+
+Table or bar chart -- AGI and personal income
+
+## Risks
+
+- how big? / how wrong?
+- when will we know
+
+## Why capital gains are important
+
+- large
+- concentrated
+- hot money - discretionary
+- payment timing
+
+## Large
+
+## Concentrated
+
+## Hot money
+
+## Timing
+
+## References
+
+::: {#refs style="font-size: 0.7em;"}
+:::
+
+
 
 ```{r}
-#| label: employment-bench-nonbench-pchya
-
-# compare NY Fed early benchmarked employment data to CES seasonally adjusted data
-
-cesbase <- ces |>
-  filter(
-    state_code == "36",
-    area_code == "00000",
-    supersector_code == "00",
-    data_type_code == "01",
-    seasonal == "S"
-  ) |>
-  mutate(src = "ces") |>
-  select(date, src, value)
-
-ebenchbase <- ebench |>
-  filter(area == "ny") |>
-  mutate(src = "ebench") |>
-  select(date, src, value = emp)
-
-pdata <- bind_rows(cesbase, ebenchbase) |>
-  filter(year(date) >= 2000) |>
-  arrange(date) |>
-  mutate(pchya = value / lag(value, 12) - 1, .by = src)
-
-pchya <- pdata |>
-  mutate(year = year(date)) |>
-  summarise(avgemp = mean(value), .by = c(year, src)) |>
-  arrange(year, src) |>
-  mutate(pchya = avgemp / lag(avgemp) - 1, .by = src)
-
-pchya  |>
-  select(year, src, pchya)|>
-  pivot_wider(names_from = src, values_from = pchya)
-
-pchya |>
-  filter(year >= 2022) |>
-  ggplot(aes(year, pchya, colour = src)) +
-  geom_line() +
-  geom_point()
-
-
-
-  ```
-
-  ```{r}
-
-p <- pdata |>
-  filter(year(date) >= 2022) |>
-  ggplot(aes(date, pchya, colour = src)) +
-  geom_line() +
-  geom_point() +
-  geom_hline(yintercept = 0, linetype = "solid", color = "blue") +
-  scale_y_continuous(
-    name = "% change",
-    labels = scales::label_percent(accuracy = 0.1),
-    breaks = seq(-.1, .2, .005) #,
-    # limits = c(0, NA)
-  ) +
-  ggtitle("NYS employment % change vs. year ago") +
-  scale_x_date(name = NULL, date_breaks = "3 months", date_labels = "%b %Y") +
-  theme_presentation() +
-  theme_rotate(angle = 45)
-p
-
-```
-
-```{r}
+#| label: experimental-employment
+#| eval: false
 
 qcew
 ces
@@ -684,7 +709,7 @@ pdata |>
   scale_y_continuous(
     name = "% change",
     labels = scales::label_percent(accuracy = 0.1),
-    breaks = seq(-.1, .2, .005) #,
+    breaks = seq(-0.1, 0.2, 0.005) #,
     # limits = c(0, NA)
   ) +
   ggtitle("NYS employment % change vs. year ago") +
@@ -732,36 +757,3 @@ bind_rows(qcew2, ces2) |>
   theme_rotate(angle = 45)
 
 ```
-
-## Revenue
-
-# Another section
-
-## The economy we tax
-
-Table or bar chart -- AGI and personal income
-
-## Risks
-
-- how big? / how wrong?
-- when will we know
-
-## Why capital gains are important
-
-- large
-- concentrated
-- hot money - discretionary
-- payment timing
-
-## Large
-
-## Concentrated
-
-## Hot money
-
-## Timing
-
-## References
-
-::: {#refs style="font-size: 0.7em;"}
-:::
