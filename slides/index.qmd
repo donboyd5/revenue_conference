@@ -502,6 +502,74 @@ piagi |>
 ## Employment
 
 ```{r}
+#| label: employment-bench-nonbench-pchya
+
+# compare NY Fed early benchmarked employment data to CES seasonally adjusted data
+
+cesbase <- ces |>
+  filter(
+    state_code == "36",
+    area_code == "00000",
+    supersector_code == "00",
+    data_type_code == "01",
+    seasonal == "S"
+  ) |>
+  mutate(src = "ces") |>
+  select(date, src, value)
+
+ebenchbase <- ebench |>
+  filter(area == "ny") |>
+  mutate(src = "ebench") |>
+  select(date, src, value = emp)
+
+pdata <- bind_rows(cesbase, ebenchbase) |>
+  filter(year(date) >= 2000) |>
+  arrange(date) |>
+  mutate(pchya = value / lag(value, 12) - 1, .by = src)
+
+pchya <- pdata |>
+  mutate(year = year(date)) |>
+  summarise(avgemp = mean(value), .by = c(year, src)) |>
+  arrange(year, src) |>
+  mutate(pchya = avgemp / lag(avgemp) - 1, .by = src)
+
+pchya  |>
+  select(year, src, pchya)|>
+  pivot_wider(names_from = src, values_from = pchya)
+
+pchya |>
+  filter(year >= 2022) |>
+  ggplot(aes(year, pchya, colour = src)) +
+  geom_line() +
+  geom_point()
+
+
+
+  ```
+
+  ```{r}
+
+p <- pdata |>
+  filter(year(date) >= 2022) |>
+  ggplot(aes(date, pchya, colour = src)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "solid", color = "blue") +
+  scale_y_continuous(
+    name = "% change",
+    labels = scales::label_percent(accuracy = 0.1),
+    breaks = seq(-.1, .2, .005) #,
+    # limits = c(0, NA)
+  ) +
+  ggtitle("NYS employment % change vs. year ago") +
+  scale_x_date(name = NULL, date_breaks = "3 months", date_labels = "%b %Y") +
+  theme_presentation() +
+  theme_rotate(angle = 45)
+p
+
+```
+
+```{r}
 
 qcew
 ces
@@ -623,6 +691,24 @@ pdata |>
   scale_x_date(name = NULL, date_breaks = "3 months", date_labels = "%b %Y") +
   theme_presentation() +
   theme_rotate(angle = 45)
+
+
+pdata |>
+  filter(src %in% c("ces_s", "ebench")) |>
+  ggplot(aes(date, value, colour = src)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 1) +
+  scale_y_continuous(
+    name = "thousands",
+    labels = scales::label_comma(scale = 1e-3, accuracy = 1),
+    breaks = seq(9e6, 10e6, 100e3)
+    # limits = c(0, NA)
+  ) +
+  ggtitle("NYS employment level") +
+  scale_x_date(name = NULL, date_breaks = "6 months", date_labels = "%b %Y") +
+  theme_presentation() +
+  theme_rotate(angle = 45)
+
 
 comp |>
   filter(year(date) %in% 2024:2025, month(date) %in% 1:6) |>
