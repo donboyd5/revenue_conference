@@ -52,13 +52,13 @@ nyspi <- readRDS(fs::path(DDATA, "bea_nyspi.rds"))
 nysagi <- readRDS(fs::path(DPITNY, "nypitds2.rds"))
 qcew <- readRDS(fs::path(DQCEW, "qstcoq_4digits_max.rds")) # a subset for speed
 qcew_emp <- readRDS(fs::path(DQCEW, "qcew_monthly_employment.rds"))
-ces <- readRDS(fs::path(DCES, "ces_data_2026-02-03.rds")) # same
+ces_states <- readRDS(fs::path(DCES, "ces_emp_states.rds"))
+cesny <- readRDS(fs::path(DCES, "cesny.rds"))
 ebench <- readRDS(fs::path(DFEDNY, "early-benchmarked-employment_data.rds"))
 b <- proc.time()
 b - a
 
 ```
-
 
 # Where we are now
 
