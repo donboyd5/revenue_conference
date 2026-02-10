@@ -146,6 +146,8 @@ update_geom_defaults("point", list(size = 3))
 ### Save CES NY subset for faster loading
 
 ```{r}
+#| label: ces-ny-subset
+
 inds <- count(ces, supersector_code, industry_code, industry_name)
 count(ces, data_type_code, data_type_text)
 
@@ -163,6 +165,7 @@ saveRDS(cesny, fs::path(DCES, "cesny.rds"))
 
 
 ```{r}
+#| label: cesny-look
 #| eval: false
 
 glimpse(cesny)
@@ -181,6 +184,7 @@ cesny |>
 ## New York Fed early benchmark data
 
 ```{r}
+#| label: nyfed-early-benchmark
 
 empnyfed1 <- vroom::vroom(fs::path(
   DFEDNY,
@@ -213,10 +217,11 @@ empnyfed2 |>
 
 ```
 
-## Data from NY State
-
+## CES data from NY State data.ny.gov -- NOT implemented
 
 ```{r}
+#| label: ces-data.ny.gov
+#| eval: false
 
 # https://data.ny.gov/Economic-Development/Current-Employment-Statistics-Beginning-1990/6k74-dgkb
 # url <- "https://data.ny.gov/a1177f73-6628-4654-b8d3-25cc2335bf5b"
@@ -229,6 +234,7 @@ download.file(url, destfile = fs::path(DCESNY, fname))
 ```
 
 ```{r}
+#| eval: false
 
 # These data are NS except for NYS totals
 fname <- "Current_Employment_Statistics__Beginning_1990.csv"
@@ -259,6 +265,8 @@ count(cesny1, area, areaname) # nys 00000; nyc 93561; 28 counties; 13 areas
 ```
 
 ```{r}
+#| eval: false
+
 cesny1 |>
   filter(area == "00000", series == "00000000", rectype == "annual") |>
   ggplot(aes(year, emp)) +
