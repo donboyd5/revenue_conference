@@ -149,9 +149,9 @@ pchya <- pdata |>
   arrange(year, src) |>
   mutate(pchya = avgemp / lag(avgemp) - 1, .by = src)
 
-  ```
+```
 
-  ```{r}
+```{r}
 #| label: show-employment-benchmark
 #| output: true
 
