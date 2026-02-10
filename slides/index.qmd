@@ -172,9 +172,14 @@ pchya <- pdata |>
 # professional colors consistent with other plots
 # emp_colors <- c(ces = "#0072B2", ebench = "#009E73")
 
+# emp_colors <- c(
+#   ces = "#1B64C4", # deep blue
+#   ebench = "#E69F00" # warm orange
+# )
+
 emp_colors <- c(
-  ces = "#1B64C4", # deep blue
-  ebench = "#E69F00" # warm orange
+  ces = "steelblue",
+  ebench = "coral"
 )
 
 emp_labels <- c(
