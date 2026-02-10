@@ -174,38 +174,9 @@ cesny |>
   geom_line() +
   geom_point()
 
-cesny |>
-  filter(data_type_code == "01") |>
-  select(date, value, seasonal) |>
-  pivot_wider(names_from = seasonal, values_from = value) |>
-  filter(year(date) >= 2023)
 
 ```
 
-```{r}
-#| eval: false
-
-laus_states <- get_laus()
-laus_states_unadjusted <- get_laus("state_unadjusted")
-
-laus_states_unadjusted |>
-  filter(
-    area_text == "New York",
-    measure_text == "employment",
-    year(date) >= 2022
-  )
-
-tmp <- laus_states |>
-  filter(area_text == "New York")
-
-tmp |>
-  filter(measure_text == "employment") |>
-  ggplot(aes(x = date, y = value)) +
-  geom_line() +
-  geom_point() +
-  theme_minimal()
-
-```
 
 ## New York Fed early benchmark data
 
@@ -337,5 +308,33 @@ cesny1 |>
   arrange(date) |>
   mutate(pchya = emp / lag(emp, 12) - 1, .by = c(area, series, rectype)) |>
   filter(year >= 2023)
+
+```
+
+
+## LAUS data via BLSloadR -- not yet implemented
+
+```{r}
+#| eval: false
+
+laus_states <- get_laus()
+laus_states_unadjusted <- get_laus("state_unadjusted")
+
+laus_states_unadjusted |>
+  filter(
+    area_text == "New York",
+    measure_text == "employment",
+    year(date) >= 2022
+  )
+
+tmp <- laus_states |>
+  filter(area_text == "New York")
+
+tmp |>
+  filter(measure_text == "employment") |>
+  ggplot(aes(x = date, y = value)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal()
 
 ```
