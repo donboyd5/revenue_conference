@@ -16,6 +16,12 @@
 
 The New York State Department of Labor (NYSDOL) provides a version of the BLS Quarterly Census of Employment and Wages (QCEW) that has quarterly county-level wage, establishment, and employment data in a format we need. The data are available from 2000 through a recent quarter. A new quarter and revisions to prior quarters generally are available about 6 months after end of a quarter.
 
+## QCEW data from data.ny.gov
+
+**CAUTION** Preliminary inspection of the data from data.ny.gov suggests that it is incomplete and not the same as the data from NYSDOL
+
+-  [about](https://data.ny.gov/Economic-Development/Quarterly-Census-of-Employment-and-Wages-Quarterly/cwsm-2ns3/about_data)
+
 ## Setup
 
 ```{r}
@@ -26,8 +32,6 @@ GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
 source(fs::path(GITROOT, "setup.R"))
 
 ```
-
-
 
 ```{r}
 #| label: qcew-names
@@ -84,7 +88,7 @@ ownerf, owner, ownershort
 "
   )
 )
-write_csv(owner_factors, fs::path(DDATA, "owner_factors.csv"))
+# write_csv(owner_factors, fs::path(DDATA, "owner_factors.csv"))
 
 ```
 
@@ -119,6 +123,7 @@ df3 <- df2 |>
   filter(areatype %in% c("State", "County")) |>
   left_join(owner_factors, by = join_by(owner)) |>
   mutate(
+    naics_level = as.integer(naics_level),
     areatype = str_to_lower(areatype),
     empq = pmean(mnth1emp, mnth2emp, mnth3emp),
     date = yq(paste(year, quarter, sep = "-"))
@@ -132,12 +137,13 @@ df4 <- df3 |>
     date,
     areatype,
     area,
-    naics,
     naics_level,
+    naics,
     naics_title,
     ownerf,
     owner,
     ownershort,
+    estab,
     mnth1emp,
     mnth2emp,
     mnth3emp,
@@ -151,45 +157,85 @@ saveRDS(df4, fs::path(DQCEW, "qcewstcoq.rds"))
 
 ```
 
+## Create qcew subsets for faster loading
 
 ```{r}
+#| label: qcew-total-owner-subset
 
-qcew <- readRDS(fs::path(DQCEW, "qcewstcoq.rds"))
-summary(qcew)
+system.time(qcew <- readRDS(fs::path(DQCEW, "qcewstcoq.rds"))) # 6.1 seconds
+# qcew |> filter(areatype == "state", naics == "00", year(date) == 2025, ownerf==1)
+count(qcew |> mutate(digits = nchar(naics)), naics_level, digits)
+
+tmp <- count(qcew, naics_level, naics, naics_title)
+
+qstcoq_totowner <- qcew |>
+  filter(ownerf == 1) |>
+  select(-c(ownerf, owner, ownershort))
+
+saveRDS(qstcoq_totowner, fs::path(DQCEW, "qstcoq_totowner.rds"))
+
+system.time(tmp <- readRDS(fs::path(DQCEW, "qstcoq_totowner.rds"))) # 2.4 seconds
+
+```
+
+
+```{r}
+#| label: qcew-total-owner-4digit-subset
+
+qstcoq_totowner <- readRDS(fs::path(DQCEW, "qstcoq_totowner.rds"))
+
+qstcoq_4digits_max <- qstcoq_totowner |>
+  filter(naics_level <= 4)
+saveRDS(qstcoq_4digits_max, fs::path(DQCEW, "qstcoq_4digits_max.rds"))
+
+system.time(tmp <- readRDS(fs::path(DQCEW, "qstcoq_4digits_max.rds"))) # 0.7 seconds
+
+```
+
+```{r}
+#| label: qcew-monthly-employment
+
+qcew <- readRDS(fs::path(DQCEW, "qstcoq_4digits_max.rds"))
 glimpse(qcew)
-count(qcew, ownerf, ownershort)
 
-tmp <- qcew |>
-  filter(ownershort == "totown", areatype == "state")
+qcew_monthly_employment1 <- qcew |>
+  select(
+    date,
+    areatype,
+    area,
+    naics_level,
+    naics,
+    naics_title,
+    mnth1emp,
+    mnth2emp,
+    mnth3emp
+  ) |>
+  pivot_longer(
+    cols = starts_with("mnth"),
+    names_to = "month",
+    values_to = "employment"
+  ) |>
+  mutate(
+    month = str_sub(month, 5L, 5L) |> as.integer(),
+    date2 = date %m+% months(month - 1)
+  )
 
-tmp |>
-  filter(naics == "00") |>
-  arrange(date) |>
-  mutate(pchya = totwage / lag(totwage, 4) - 1) |>
-  ggplot(aes(date, pchya)) +
-  geom_line() +
-  geom_point() +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  scale_y_continuous(
-    breaks = seq(-.5, .5, .01),
-    labels = scales::percent_format(accuracy = 1)
-  ) +
-  theme_bw()
+count(qcew_monthly_employment1, month)
+count(qcew_monthly_employment1, date, date2)
 
-tmp |>
-  filter(naics == "00") |>
-  arrange(date) |>
-  mutate(pchya = empq / lag(empq, 4) - 1) |>
-  ggplot(aes(date, pchya)) +
-  geom_line() +
-  geom_point() +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  scale_y_continuous(
-    breaks = seq(-.5, .5, .01),
-    labels = scales::percent_format(accuracy = 1)
-  ) +
-  theme_bw()
+glimpse(qcew_monthly_employment1)
 
+qcew_monthly_employment <- qcew_monthly_employment1 |>
+  select(-date, -month) |>
+  select(date = date2, everything())
+
+glimpse(qcew_monthly_employment)
+summary(qcew_monthly_employment)
+skimr::skim_without_charts(qcew_monthly_employment)
+
+saveRDS(qcew_monthly_employment, fs::path(DQCEW, "qcew_monthly_employment.rds"))
+
+system.time(tmp <- readRDS(fs::path(DQCEW, "qcew_monthly_employment.rds"))) # 1.8 seconds
 
 ```
 
