@@ -1,6 +1,6 @@
 ---
 title: "New York Tax Revenue and the Economy"
-subtitle: "NYS Consensus Economic and Revenue Forecasting Conference"
+subtitle: "NYS Consensus Economic and Revenue<br> Forecasting Conference"
 author: "Don Boyd"
 date: "2026-02-27"
 date-format: long
@@ -10,7 +10,8 @@ format:
     chalkboard:
       buttons: false
     preview-links: auto
-    # logo: images/quarto.png
+    footer: '<img src="images/UAlbany_logo_purple_and_gold_cropped.png" height="60" alt="logo">'
+    # not: UAlbany_Minerva_Formal_Left_GoldWhite-purplebackground_0.png, ualbany_djb.png
     # css: styles.css
     # footer: '[https://{{< meta prerelease-subdomain >}}quarto.org](https://{{< meta prerelease-subdomain >}}quarto.org)'
   # pdf:
@@ -60,7 +61,7 @@ ebench <- readRDS(fs::path(DFEDNY, "early-benchmarked-employment_data.rds"))
 
 # Where we are now
 
-## Population change since the 2020 Census
+## <span style="font-size: 0.8em;">Population change since the 2020 Census</span>
 
 ```{r}
 #| label: pop-change-facets
@@ -151,6 +152,12 @@ pchya <- pdata |>
 ```{r}
 #| label: show-employment-benchmark
 #| output: true
+#| fig-width: 11
+#| fig-height: 6.2
+#| fig-retina: 2
+
+# # | fig-width: 17.8
+# # | fig-height: 10
 
 # professional colors consistent with other plots
 emp_colors <- c(ces = "#0072B2", ebench = "#009E73")
@@ -168,14 +175,19 @@ p <- pdata |>
   scale_colour_manual(values = emp_colors, labels = emp_labels, name = NULL) +
   scale_y_continuous(
     name = "% change",
-    labels = scales::label_percent(accuracy = 0.1),
-    breaks = seq(-0.1, 0.2, 0.005)
+    labels = scales::label_percent(accuracy = 1),
+    breaks = seq(-0.1, 0.2, 0.01),
+    minor_breaks = seq(-0.01, 0.20, 0.005), # minor ticks every 0.5%
+    limits = c(-0.005, NA)
   ) +
   ggtitle("NYS employment % change vs. year ago") +
   scale_x_date(name = NULL, date_breaks = "3 months", date_labels = "%b %Y") +
   theme_presentation() +
   theme_rotate(angle = 45) +
-  theme(legend.title = element_blank())
+  theme(
+    legend.title = element_blank(),
+    panel.grid.minor.y = element_line(color = "gray85", linewidth = 0.3)
+  )
 
 p
 
