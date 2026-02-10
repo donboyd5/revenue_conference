@@ -1,0 +1,109 @@
+# Capital gains data
+
+National data available from Tax Foundation: https://taxfoundation.org/data/all/federal/federal-capital-gains-tax-collections-historical-data/
+
+
+## Setup
+
+```{r}
+#| label: setup
+
+rm(list = ls())
+GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GITROOT, "setup.R"))
+
+```
+
+
+## Tax Foundation U.S. data
+
+
+```{r}
+#| label: download-capgains
+
+url <- "https://taxfoundation.org/wp-content/uploads/2025/08/Federal-Capital-Gains-Tax-Rates-Collections-1913-2025_fv.xlsx"
+download.file(
+  url,
+  fs::path(
+    DCAPGAINS,
+    "federal-capital-gains-tax-rates-collections-1913-2025_fv.xlsx"
+  ),
+  mode = "wb"
+)
+
+```
+
+
+```{r}
+
+fname <- "Federal-Capital-Gains-Tax-Rates-Collections-1913-2025_fv.xlsx"
+cg1 <- readxl::read_excel(
+  fs::path(DCAPGAINS, fname),
+  sheet = 1,
+  skip = 4,
+  col_names = c("year", "cg", "cgtax", "cgetr", "cgpctgdp", "cgmaxrate"),
+  col_types = "text"
+)
+
+cg2 <- cg1 |>
+  dplyr::mutate(
+    dplyr::across(
+      .cols = -c(year, cgmaxrate),
+      .fns = ~ as.numeric(.x)
+    ),
+    year = as.integer(year)
+  )
+
+saveRDS(
+  cg2,
+  fs::path(DCAPGAINS, "federal_capital_gains_tax_foundation_1913_2025.rds")
+)
+
+```
+
+
+```{r}
+
+cg3 <- readRDS(fs::path(
+  DCAPGAINS,
+  "federal_capital_gains_tax_foundation_1913_2025.rds"
+))
+
+cg4 <- cg3 |>
+  filter(!is.na(cg)) |>
+  mutate(across(
+    .cols = c(cg, cgtax),
+    .fns = \(x) x * 1e6
+  )) |>
+  select(year, cg, cgtax, cgetr, cgpctgdp)
+
+saveRDS(
+  cg4,
+  fs::path(DDATA, "uscapgains.rds")
+)
+
+```
+
+
+```{r}
+
+cg <- readRDS(fs::path(DDATA, "uscapgains.rds"))
+glimpse(cg)
+
+cg |> ggplot(aes(year, cg)) + geom_line() + geom_point()
+cg |>
+  filter(year >= 2000) |>
+  ggplot(aes(year, cgpctgdp)) +
+  geom_line() +
+  geom_point() +
+  theme_presentation()
+
+```
+
+## NYS data - ChatGPT interpretation of graph
+
+```{r}
+
+```
+
+

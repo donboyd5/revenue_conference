@@ -7,6 +7,13 @@
 
 index_files/
 
+# file types
+
+~*
+*.html
+*.pdf
+*.rds
+
 # files
 
-*.html
+resources/fy27ero_unlocked_Copy.xlsx

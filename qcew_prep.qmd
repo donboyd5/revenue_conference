@@ -23,14 +23,7 @@ The New York State Department of Labor (NYSDOL) provides a version of the BLS Qu
 
 rm(list = ls())
 GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
-DDATA <- fs::path(GITROOT, "data")
-DQCEW <- fs::path("D:/", "data", "qcew")
-
-source(fs::path(GITROOT, "libraries.R"))
-source(fs::path(GITROOT, "libraries_ts.R"))
-
-# QROOT <- fs::path(GITROOT, "tmd", "national_targets", "qmd")
-# source(fs::path(QROOT, "setup.R"))
+source(fs::path(GITROOT, "setup.R"))
 
 ```
 
@@ -127,7 +120,7 @@ df3 <- df2 |>
   left_join(owner_factors, by = join_by(owner)) |>
   mutate(
     areatype = str_to_lower(areatype),
-    empq = pmean(mnth1emp, mnth2emp, mnth2emp),
+    empq = pmean(mnth1emp, mnth2emp, mnth3emp),
     date = yq(paste(year, quarter, sep = "-"))
   )
 glimpse(df3)
@@ -147,7 +140,7 @@ df4 <- df3 |>
     ownershort,
     mnth1emp,
     mnth2emp,
-    mnth2emp,
+    mnth3emp,
     empq,
     totwage
   )
@@ -196,7 +189,6 @@ tmp |>
     labels = scales::percent_format(accuracy = 1)
   ) +
   theme_bw()
-
 
 
 ```

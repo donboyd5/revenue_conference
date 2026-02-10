@@ -1,0 +1,104 @@
+# Personal income tax data
+
+https://data.ny.gov/Government-Finance/Personal-Income-Tax-Filers-Summary-Dataset-2-Major/f3t7-zvbx
+
+
+## Setup
+
+```{r}
+#| label: setup
+
+rm(list = ls())
+GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GITROOT, "setup.R"))
+
+```
+
+## Get data
+
+```{r}
+
+fname <- "Personal_Income_Tax_Filers,_Summary_Dataset_2_-_Major_Items_and_Income_&_Deduction_Components_by_Place_of_Residence_and_Broad_Income_Range__Beginning_Tax_Year_2015_20260204.csv"
+
+df1 <- vroom::vroom(fs::path(DPITNY, fname))
+
+vnames <- tibble(vnum = seq_len(ncol(df1)), vdesc = names(df1))
+#   "fed_idagi",
+colnames <- c(
+  "year",
+  "rstat",
+  "por",
+  "county",
+  "state",
+  "country",
+  "agirange",
+  "notes",
+  "numret",
+  "fed_nyagi",
+  "nysagi",
+  "nysd",
+  "nyid",
+  "dedused",
+  "depexempt_n",
+  "depexempt_amt",
+  "ti",
+  "taxbc",
+  "credits",
+  "taxliab",
+  "wages",
+  "interest",
+  "dividends",
+  "capgains",
+  "caploss",
+  "rrpetgain",
+  "rrpetloss",
+  "busfarmgain",
+  "busfarmloss",
+  "pensions",
+  "otherinc",
+  "fedadjust",
+  "fedagi",
+  "addbonds",
+  "addperscontrib",
+  "addcollege",
+  "addother",
+  "subsaltref",
+  "subgovpension",
+  "subsocsec",
+  "subfedbonds",
+  "subpension",
+  "subcollege",
+  "subother",
+  "idmedical",
+  "idtaxes",
+  "idinterest",
+  "idcharitable",
+  "idother",
+  "idfederal",
+  "pitsubadjust",
+  "nyadds",
+  "nyidadjust",
+  "sortplace",
+  "sortincome"
+)
+colnames <- c(colnames, rep(NA, nrow(vnames) - length(colnames)))
+
+vnames <- vnames |>
+  mutate(vname = colnames)
+vnames
+
+rename_vec <- vnames |>
+  select(vname, vdesc) |>
+  deframe()
+
+df2 <- df1 |>
+  rename(any_of(rename_vec)) |>
+  mutate(across(c(year, numret, sortplace, sortincome), as.integer))
+glimpse(df2)
+
+```
+
+
+```{r}
+saveRDS(df2, fs::path(DPITNY, "nypitds2.rds"))
+```
