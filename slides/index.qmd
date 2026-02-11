@@ -27,10 +27,10 @@ execute:
 
 ## Revenue forecasters' woes
 
--  We don't know the present -- substantial data lags
+-  We don't truly know the present -- substantial data lags
 -  The past isn't what it used to be -- data revisions
--  The economy we measure is not the economy we tax
--  We must forecast *when* people will pay, not just *what* they owe
+-  The economy we measure is not quite the economy we tax
+-  Must forecast *when* people pay, in addition to *what* they owe
 
 Each issue adds to forecast risk.
 
@@ -271,7 +271,7 @@ data |>
   fmt_percent(columns = -src, decimals = 1) |>
   sub_missing(columns = -src, missing_text = "-") |>
   tab_source_note(
-    "Sources: U.S. Bureau of Labor Statistics (CES), New York Federal Reserve Bandk (NY Fed), and NYS Division of the Budget (DOB)"
+    "Sources: U.S. Bureau of Labor Statistics (CES), New York Federal Reserve Bank (NY Fed), and NYS Division of the Budget (DOB)"
   )
 
 ```
