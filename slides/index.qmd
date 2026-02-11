@@ -11,8 +11,7 @@ format:
       buttons: false
     preview-links: auto
     footer: '<img src="images/UAlbany_logo_purple_and_gold_cropped.png" height="50" alt="logo">'
-    # not: UAlbany_Minerva_Formal_Left_GoldWhite-purplebackground_0.png, ualbany_djb.png
-    # css: styles.css
+    css: styles.css
     # footer: '[https://{{< meta prerelease-subdomain >}}quarto.org](https://{{< meta prerelease-subdomain >}}quarto.org)'
   # pdf:
   #   output-file: slides.pdf
@@ -69,7 +68,9 @@ ebench <- readRDS(fs::path(DFEDNY, "early-benchmarked-employment_data.rds"))
 
 # Where we are now
 
-## <span style="font-size: 0.8em;">Population change since the 2020 Census</span>
+<!-- ## <span style="font-size: 0.8em;">Population change since the 2020 Census</span> -->
+
+## Population change since the 2020 Census
 
 ```{r}
 #| label: pop-change-facets
@@ -127,7 +128,7 @@ pop |>
 
 <!-- ## Employment -->
 
-## <span style="font-size: 0.8em;">NY Fed early benchmark suggests downward NY employment revisions ahead</span>
+## NY Fed early benchmark: Downward revisions ahead?
 
 ```{r}
 #| label: employment-bench-nonbench-pchya
@@ -269,7 +270,7 @@ pdata <- piagi |>
 
 <!-- ## Economic and tax-base variables often diverge -->
 
-## <span style="font-size: 0.8em;">Economic and tax-base variables often diverge</span>
+## Economic and tax-base variables often diverge
 
 ```{r}
 #| label: piagi-growth-plot
