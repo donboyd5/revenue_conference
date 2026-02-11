@@ -30,9 +30,9 @@ execute:
 -  We don't know the present -- substantial data lags
 -  The past isn't what it used to be -- data revisions
 -  The economy we measure is not the economy we tax
--  Must forecast *when* people will pay, not just *what* they owe
+-  We must forecast *when* people will pay, not just *what* they owe
 
-Each issue heightens forecast risk. Each arises in slides that follow.
+Each issue adds to forecast risk.
 
 ::: {.notes}
 Lags - PIT data from tax returns -- 2023 is latest full file
@@ -62,7 +62,6 @@ qcew_emp <- readRDS(fs::path(DQCEW, "qcew_monthly_employment.rds"))
 ces_states <- readRDS(fs::path(DCES, "ces_emp_states.rds"))
 cesny <- readRDS(fs::path(DCES, "cesny.rds"))
 ebench <- readRDS(fs::path(DFEDNY, "early-benchmarked-employment_data.rds"))
-
 
 ```
 
@@ -163,14 +162,6 @@ pdata <- bind_rows(cesbase, ebenchbase) |>
 # # | fig-width: 17.8
 # # | fig-height: 10
 
-# professional colors consistent with other plots
-# emp_colors <- c(ces = "#0072B2", ebench = "#009E73")
-
-# emp_colors <- c(
-#   ces = "#1B64C4", # deep blue
-#   ebench = "#E69F00" # warm orange
-# )
-
 emp_colors <- c(
   ces = "steelblue",
   ebench = "coral"
@@ -209,8 +200,7 @@ p
 ```
 
 
-## Annual employment growth rates
-
+## DOB employment forecast not so surprising compared to early benchmark
 ```{r}
 #| label: dob-nyseea-cy-growth
 
@@ -238,6 +228,7 @@ dobeea <- tribble(
 
 ```{r}
 #| label: employment-bench-pchya-table
+#| output: true
 
 # for a table
 pchya <- pdata |>
@@ -250,44 +241,43 @@ data <- bind_rows(pchya, dobeea) |>
   filter(year >= 2019) |>
   select(year, src, pchya)
 
-data |>
-  filter(year >= 2022) |>
-  ggplot(aes(year, pchya, colour = src)) +
-  geom_line() +
-  geom_point(size = 1.5) +
-  geom_hline(yintercept = 0, linetype = "solid", color = "blue") +
-  scale_x_continuous(name = NULL, breaks = 2019:2029)
+levs <- c("ces", "ebench", "dob")
+
+labs <- c(
+  ces = "Official employment (CES)",
+  ebench = "Early benchmark (NY Fed)",
+  dobeea = "Executive budget (DOB)"
+)
 
 data |>
-  pivot_wider(names_from = src, values_from = pchya) |>
-  mutate(
-    ces_label = scales::label_percent(accuracy = 0.1)(ces),
-    ebench_label = scales::label_percent(accuracy = 0.1)(ebench),
-    dob_label = scales::label_percent(accuracy = 0.1)(dob)
+  filter(year %in% 2023:2027) |>
+  mutate(src = factor(src, levels = levs, labels = labs)) |>
+  pivot_wider(names_from = year, values_from = pchya, names_prefix = "y") |>
+  arrange(src) |>
+  gt() |>
+  tab_header(
+    "NYS Employment History and Forecast",
+    subtitle = "% Change vs. prior calendar year"
   ) |>
-  select(year, ces_label, ebench_label, dob_label)
-
-
-pchya_table <- pdata |>
-  mutate(year = year(date)) |>
-  summarise(avgemp = mean(value), .by = c(year, src)) |>
-  arrange(year, src) |>
-  group_by(src) |>
-  mutate(pchya = avgemp / lag(avgemp) - 1) |>
-  ungroup()
-pchya_table |>
-  select(year, src, pchya) |>
-  pivot_wider(names_from = src, values_from = pchya) |>
-  mutate(
-    ces_label = scales::label_percent(accuracy = 0.1)(ces),
-    ebench_label = scales::label_percent(accuracy = 0.1)(ebench)
+  cols_label(
+    src = "Source",
+    y2023 = "2023",
+    y2024 = "2024",
+    y2025 = "2025",
+    y2026 = "2026",
+    y2027 = "2027"
   ) |>
-  select(year, ces_label, ebench_label)
+  cols_align(align = "left", columns = src) |>
+  fmt_percent(columns = -src, decimals = 1) |>
+  sub_missing(columns = -src, missing_text = "-") |>
+  tab_source_note(
+    "Sources: U.S. Bureau of Labor Statistics (CES), New York Federal Reserve Bandk (NY Fed), and NYS Division of the Budget (DOB)"
+  )
+
 ```
 
 
 # Linking economic and tax-revenue forecasts
-
 ```{r}
 #| label: get-agi-pi-data
 
@@ -451,30 +441,6 @@ agibase2 <- agibase |>
 piagi <- agibase2 |>
   pivot_longer(cols = -year, names_to = "variable", values_to = "value") |>
   bind_rows(pibase)
-
-# vars <- c("nyspi", "nysagi", "wages", "capnet", "other")
-# piagi |>
-#   filter(variable != "other") |>
-#   arrange(variable, year) |>
-#   mutate(
-#     pchya = value / lag(value) - 1,
-#     .by = variable,
-#     variable = factor(variable, levels = vars)
-#   ) |>
-#   arrange(variable, year) |>
-#   ggplot(aes(year, pchya, colour = variable)) +
-#   geom_line() +
-#   geom_point() +
-# geom_hline(yintercept = 0)
-
-# agibase |> mutate(check=wages+intdiv+capnet+rrpetnet+busfarmnet+pensions+otherinc+allother - nysagi) |> summarize(max_abs_check = max(abs(check)))
-
-# agibase2 |>
-#   mutate(across(-year, \(x) x - lag(x)))
-
-# agibase2 |>
-#   mutate(across(-year, \(x) x - lag(x))) |>
-#   mutate(across(-c(year, nysagi), \(x) x / nysagi))
 
 ```
 
@@ -691,8 +657,6 @@ Table or bar chart -- AGI and personal income
 
 ::: {#refs style="font-size: 0.7em;"}
 :::
-
-
 
 ```{r}
 #| label: experimental-employment
