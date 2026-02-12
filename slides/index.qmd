@@ -56,6 +56,7 @@ source(fs::path(GITROOT, "setup.R"))
 
 pop <- readRDS(fs::path(DDATA, "ny_state_population_estimates_1970_2024.rds"))
 nyspi <- readRDS(fs::path(DDATA, "bea_nyspi.rds"))
+pitsut <- readRDS(fs::path(DDATA, "pitsut.rds"))
 nysagi <- readRDS(fs::path(DPITNY, "nypitds2.rds"))
 qcew <- readRDS(fs::path(DQCEW, "qstcoq_4digits_max.rds")) # a subset for speed
 qcew_emp <- readRDS(fs::path(DQCEW, "qcew_monthly_employment.rds"))
