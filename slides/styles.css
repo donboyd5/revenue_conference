@@ -1,5 +1,6 @@
 /* styles.css */
+/* .reveal .slides section h2 { */
 
-.reveal .slides section h2 {
+.reveal section h2 {
   font-size: 1.4em !important;
 }
