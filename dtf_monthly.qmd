@@ -36,6 +36,20 @@ pitsut <- dtfm |>
   filter(str_starts(vname, "pit_") | vname == "user_sut") |>
   select(vname, tax, date, value)
 
+saveRDS(pitsut, fs::path(DDATA, "pitsut.rds"))
+
+```
+
+```{r}
+#| label: explore
+
+pitsut <- readRDS(fs::path(DDATA, "pitsut.rds"))
+
+pitsut |>
+  filter(vname == "pit_wh") |>
+  mutate(sfy = ifelse(month(date) > 3, year(date) + 1, year(date))) |>
+  summarise(pit_wh = sum(value), .by = sfy)
+
 pitsut |>
   filter(vname == "pit_wh") |>
   ggplot(aes(date, value)) +
@@ -48,7 +62,7 @@ pdata <- pitsut |>
   mutate(month = yearmonth(date)) |>
   as_tsibble(index = month)
 # skimr::skim(pdata)
-scan_gaps(pdata)
+scan_gaps(pdata) # if there are gaps, fix them
 
 pdata |>
   filter(year(date) >= 2022) |>
@@ -81,15 +95,15 @@ pdata_f |>
 
 pdata_f |>
   filter(year(date) >= 2023) |>
-  ggtime::gg_subseries(value, period = "year") -> p_sub
-p_sub +
+  ggtime::gg_subseries(value, period = "year") +
   scale_y_continuous(
-    labels = scales::dollar_format(scale = 1e-6, suffix = "M")
+    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 0.1),
+    breaks = seq(0, 10e9, by = 500e6)
   ) +
   scale_color_viridis_d(option = "C") +
   theme_minimal(base_size = 12) +
   theme(strip.text = element_text(face = "bold")) +
-  labs(title = "Subseries (tweaked)", y = "Collections (millions)")
+  labs(title = "Withholding tax collections by month", y = "$ billions")
 
 pdata_f |>
   arrange(date) |>
@@ -113,5 +127,3 @@ p_yoy <- pdata_yoy |>
 p_yoy
 
 ```
-
-
