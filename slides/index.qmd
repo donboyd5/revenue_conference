@@ -10,7 +10,7 @@ format:
     chalkboard:
       buttons: false
     preview-links: auto
-    footer: '<img src="images/UAlbany_logo_purple_and_gold_cropped.png" height="50" alt="logo">'
+    footer: '<img src="images/UAlbany_Minerva_Informal_Left_Purple.png" height="50" alt="logo">'  # UAlbany_Minerva_Informal_Left_Purple UAlbany_logo_purple_and_gold_cropped UAlbany_Minerva_Formal_Left_Purple
     css: styles.css
     # footer: '[https://{{< meta prerelease-subdomain >}}quarto.org](https://{{< meta prerelease-subdomain >}}quarto.org)'
   # pdf:
