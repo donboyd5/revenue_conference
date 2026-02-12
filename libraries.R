@@ -42,6 +42,7 @@ library(ggrepel)
 library(ggbreak)
 library(ggpattern)
 library(grid) # for unit()
+library(ggtext) # for ggtext::element_markdown()
 
 # tables
 library(formattable)

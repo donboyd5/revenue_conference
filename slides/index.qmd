@@ -201,7 +201,7 @@ p
 ```
 
 
-## DOB employment forecast does not seem pessimistic given NY Fed early benchmark
+## DOB employment forecast seems less pessimistic in context of early benchmark
 
 ```{r}
 #| label: dob-nyseea-cy-growth
@@ -632,6 +632,37 @@ piagi |>
 
 # Withholding tax collections
 
+## Wages
+
+```{r}
+
+tmp <- count(qcew, naics_level, naics, naics_title)
+
+wages <- qcew |>
+  filter(areatype == "state") |>
+  filter(naics == "00" | str_starts(naics, "523")) #|>
+# select(-c(areatype, area, estab, contains("emp")))
+
+# wages2 <- wages |>
+#   mutate(
+#     ind = case_when(
+#       naics == "00" ~ "total",
+#       naics == "523" ~ "finance",
+#       naics == "5231" ~ "securities",
+#       naics == "5232" ~ "exchanges",
+#       naics == "5239" ~ "other",
+#       .default="ERROR"
+#     )
+#   ) # |>
+#   #select(date, ind, totwage) |>
+#   #pivot_wider(names_from = ind, values_from = totwage)
+
+# wages2 |>
+#   mutate(across(c(finance, securities, exchanges, other), \(x) x / finance))
+
+```
+
+
 ## {.no-title}
 
 ```{r}
@@ -681,20 +712,25 @@ pdata |>
   theme_presentation() +
   theme(
     strip.text = element_text(face = "bold"),
-    axis.text.x = element_text(angle = 0)
+    axis.text.x = element_text(angle = 0),
+    plot.caption = ggtext::element_markdown(),
   ) +
   theme_rotate(angle = 90) +
   ggtitle(
-    "PIT Withholding Tax Collections by Month",
-    subtitle = "Red horizontal line is monthly mean calculated over 2023-2025"
+    "PIT Withholding Tax Collections by Month, Calendar years 2023-2025",
+    subtitle = "Red horizontal line is monthly mean"
   ) +
   labs(
     y = "$ billions",
-    x = "Calendar year",
-    caption = "Source: NYS Department of Taxation and Finance\nCAUTION: Vertical axis does not start at zero"
+    x = NULL,
+    # x = "Calendar year",
+    caption = "Source: NYS Department of Taxation and Finance<br>**CAUTION: Vertical axis does not start at zero**"
   )
 
 ```
+
+## Recent news from other states
+
 
 
 ## Revenue
