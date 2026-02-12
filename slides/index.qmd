@@ -201,7 +201,8 @@ p
 ```
 
 
-## DOB employment forecast not so surprising compared to early benchmark
+## DOB employment forecast does not seem pessimistic given NY Fed early benchmark
+
 ```{r}
 #| label: dob-nyseea-cy-growth
 
@@ -226,6 +227,7 @@ dobeea <- tribble(
 
 ```
 
+<br>
 
 ```{r}
 #| label: employment-bench-pchya-table
@@ -614,7 +616,9 @@ piagi |>
     labels = scales::label_percent(accuracy = 1)
   ) +
   scale_x_continuous(name = NULL, breaks = 2015:2024) +
-  ggtitle("Growth Rates of Personal Income, AGI, and Major Components") +
+  ggtitle(
+    "Growth Rates of Personal Income, AGI, and Major Components"
+  ) +
   labs(caption = "Sources: BEA and NYS Department of Taxation and Finance") +
   theme_presentation() +
   theme(
@@ -625,6 +629,73 @@ piagi |>
   )
 
 ```
+
+# Withholding tax collections
+
+## {.no-title}
+
+```{r}
+#| label: wh-plot
+#| output: true
+#| fig-width: 11
+#| fig-height: 9
+
+# create a gg_subseries style plot but with control over the details
+
+pdata <- pitsut |>
+  filter(vname == "pit_wh") |>
+  filter(year(date) >= 2023) |>
+  mutate(
+    year = year(date),
+    mon = factor(month(date, label = TRUE), levels = month.abb)
+  )
+
+yr_min <- min(lubridate::year(pdata$date))
+yr_max <- max(lubridate::year(pdata$date))
+
+facet_means <- pdata |>
+  summarise(mean_value = mean(value, na.rm = TRUE), .by = mon)
+
+pdata |>
+  ggplot(aes(x = year, y = value)) +
+  geom_line(aes(group = 1), color = "steelblue", na.rm = TRUE) +
+  geom_point(na.rm = TRUE) +
+  geom_hline(
+    data = facet_means,
+    aes(yintercept = mean_value),
+    color = "red",
+    linetype = "solid",
+    linewidth = 0.5,
+    inherit.aes = FALSE
+  ) +
+  facet_wrap(~mon, nrow = 1, scales = "fixed") + # one row, same y-axis across months
+  scale_x_continuous(
+    breaks = seq(yr_min, yr_max, by = 1),
+    expand = expansion(add = c(0.4, 0.4)) # add internal left/right padding
+  ) +
+  scale_y_continuous(
+    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 0.1),
+    breaks = seq(0, 10e9, by = 500e6),
+    # limits = c(0, NA)
+  ) +
+  theme_presentation() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 0)
+  ) +
+  theme_rotate(angle = 90) +
+  ggtitle(
+    "PIT Withholding Tax Collections by Month",
+    subtitle = "Red horizontal line is monthly mean calculated over 2023-2025"
+  ) +
+  labs(
+    y = "$ billions",
+    x = "Calendar year",
+    caption = "Source: NYS Department of Taxation and Finance\nCAUTION: Vertical axis does not start at zero"
+  )
+
+```
+
 
 ## Revenue
 
@@ -723,8 +794,7 @@ wide |>
 # library(feasts)
 # library(tsibble)
 
-# Convert to tsibble (time series tibble)
-# Convert to tsibble with monthly interval
+# Convert to tsibble (time series tibble) with monthly interval
 wide_ts <- wide |>
   filter(!is.na(pdiff)) |>
   mutate(month = yearmonth(date)) |>
