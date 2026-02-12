@@ -1,0 +1,117 @@
+# NYS Department of Taxation and Finance Monthly Data Files
+
+
+
+
+## Setup
+
+```{r}
+#| label: setup
+
+rm(list = ls())
+GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GITROOT, "setup.R"))
+
+```
+
+
+```{r}
+
+# D:/R_projects/nys_monthly_tax/data/monthly_collections.rds
+fpath <- r"(D:/R_projects/nys_monthly_tax/data/monthly_collections.rds)"
+dtfm <- readRDS(fpath)
+skimr::skim(dtfm)
+dtfm |>
+  filter(date == as.Date("2020-09-01"))
+
+dtfm |>
+  filter(vname == "pit_wh", year(date) == 2020)
+
+
+# winnow down to data we need
+count(dtfm, typesort, type)
+count(dtfm |> filter(typesort %in% 1:2), typesort, type, tax, vname)
+
+pitsut <- dtfm |>
+  filter(str_starts(vname, "pit_") | vname == "user_sut") |>
+  select(vname, tax, date, value)
+
+pitsut |>
+  filter(vname == "pit_wh") |>
+  ggplot(aes(date, value)) +
+  geom_line() +
+  geom_point()
+
+# Convert to tsibble (time series tibble) with monthly interval
+pdata <- pitsut |>
+  filter(vname == "pit_wh") |>
+  mutate(month = yearmonth(date)) |>
+  as_tsibble(index = month)
+# skimr::skim(pdata)
+scan_gaps(pdata)
+
+pdata |>
+  filter(year(date) >= 2022) |>
+  ggtime::gg_season(value, period = "year") +
+  labs(
+    title = "Seasonal Pattern",
+    x = "Month"
+  )
+
+# Ensure explicit gaps
+pdata_f <- pdata |> tsibble::fill_gaps(value = NA)
+
+# Option 1 — feasts/ggtime subseries (one panel per month)
+pdata_f |>
+  filter(year(date) >= 2022) |>
+  ggtime::gg_subseries(value, period = "year") +
+  labs(title = "Subseries plot (one panel per month)")
+
+# Option 2 — single panel: a line per month across years
+pdata_f |>
+  mutate(
+    year = year(month),
+    m = factor(month(month, label = TRUE), levels = month.abb)
+  ) |>
+  ggplot(aes(x = year, y = value, group = m, color = m)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Lines by month across years", x = "Year", color = "Month")
+
+
+pdata_f |>
+  filter(year(date) >= 2023) |>
+  ggtime::gg_subseries(value, period = "year") -> p_sub
+p_sub +
+  scale_y_continuous(
+    labels = scales::dollar_format(scale = 1e-6, suffix = "M")
+  ) +
+  scale_color_viridis_d(option = "C") +
+  theme_minimal(base_size = 12) +
+  theme(strip.text = element_text(face = "bold")) +
+  labs(title = "Subseries (tweaked)", y = "Collections (millions)")
+
+pdata_f |>
+  arrange(date) |>
+  tsibble::fill_gaps(value = NA) |>
+  mutate(
+    yoy = value / dplyr::lag(value, 12) - 1,
+    year = year(date),
+    mon = factor(month(date, label = TRUE), levels = month.abb)
+  ) -> pdata_yoy
+
+p_yoy <- pdata_yoy |>
+  filter(year(date) >= 2023) |>
+  ggplot(aes(x = date, y = yoy)) +
+  geom_line(na.rm = TRUE) +
+  geom_point(size = 0.9, na.rm = TRUE) +
+  geom_hline(yintercept = 0, linetype = "solid", color = "red") +
+  scale_y_continuous(labels = scales::label_percent(accuracy = 0.1)) +
+  labs(title = "Year-over-year % change", y = "YoY %", x = "Date") +
+  theme_minimal(base_size = 12)
+
+p_yoy
+
+```
+
+
