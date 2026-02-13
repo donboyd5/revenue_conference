@@ -1,0 +1,166 @@
+# Bonuses
+
+To estimate bonus wages in NAICS 52, I define a bonus year as quarters 2, 3, and 4 and the following quarter 1, thereby keeping quarter 4 and the following quarter 1 together in the same bonus year. I do this because they are generally related to profits in the same calendar year. For example, I define bonus year 2023 as quarters 2, 3, and 4 of 2023 plus the first quarter of 2024. I treat quarters 2 and 3 as non-bonus quarters, and quarters 4 and 1 as bonus quarters.
+
+I estimate bonuses as follows:
+Compute average wages per employee for quarters 2 and 3 combined and call them “base wages” (i.e., non-bonus wages).
+Compute average wages per employee for quarter 4 and for quarter 1 and call them bonus-including wages.
+Subtract base wages from bonus-including wages for quarter 4 and quarter 1 to get average bonus per employee in quarters 4 and 1 respectively.
+Multiply average bonus per employee by number of employees to get total bonus wages for quarter 4 and for quarter 1.
+Add quarter 4 and quarter 1 total bonus wages to get total bonus wages for the bonus year.
+
+### DOB approach
+
+Firm-level average wages are calculated for each quarter. DOB obtains the firm’s base pay (that is, wages excluding variable pay) by taking the average over the two quarters with the lowest average wages.
+
+If the average wage for either of the remaining quarters is significantly above the base wage, then that quarter is assumed to contain variable income. The threshold adopted for this purpose was 25 percent.
+
+The average variable payment is then defined as total average wage minus the base average wage, after allowing for an inflation adjustment to base wages.
+
+Total variable pay is then calculated by multiplying the average bonus payment by the total number of firm employees
+
+## Setup
+
+```{r}
+#| label: setup
+
+rm(list = ls())
+GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
+source(fs::path(GITROOT, "setup.R"))
+
+```
+
+## DOB approach for estimating historical bonuses
+
+It is assumed that only private-sector employees earn variable pay, though employees of private educational institutions and of utilities are excluded.
+
+Firm-level average wages are calculated for each quarter. DOB obtains the firm’s base pay (that is, wages excluding variable pay) by taking the average over the two quarters with the lowest average wages.
+
+If the average wage for either of the remaining quarters is significantly above the base wage, then that quarter is assumed to contain variable income. The threshold adopted for this purpose was 25 percent.
+
+The average variable payment is then defined as total average wage minus the base average wage, after allowing for an inflation adjustment to base wages.
+
+Total variable pay is then calculated by multiplying the average bonus payment by the total number of firm employees
+
+## DOB forecast approach
+
+The first step involves estimating a bonus payments model for the finance and insurance sector, since these bonuses are largely exogenous to wages paid in the remainder of the State economy. Because bonus payments for the remaining sectors have been found to have long-term equilibrium relationships with finance and insurance sector bonuses, these relationships are estimated in the second step. Feedback from Wall Street to the other sectors of the State economy can be substantial, especially for business services. In the final step, these long-term relationships are incorporated into the bonus estimating equations for the remaining sectors within an error correction framework.  Revenues of the New York Stock Exchange (NYSE) member firms explain much of the variation in finance and insurance sector bonuses. Among the major drivers of revenues are two types of Wall Street underwriting activities – the dollar volume of initial public offerings (IPOs) and the value of debt underwritings. DOB forecasts these two variables first based on the interest rate and equity market forecasts provided by DOB/U.S. Traditionally, finance and insurance sector bonuses have been paid out in December or the following January and February, based roughly on the firm’s performance for the calendar year ending in December. Consequently, the finance and insurance sector bonus series are converted from a quarterly to a fiscal year frequency, while the explanatory variables are annualized on a calendar year basis. The forecast is then converted back to a quarterly series based on the most recent fiscal year’s pattern. See below for the finance and insurance sector bonus estimation equation.
+
+## Get data
+
+```{r}
+
+qcew1 <- readRDS(fs::path(DQCEW, "qstcoq_4digits_max.rds"))
+
+inds <- count(qcew1, naics_level, naics, naics_title) |>
+  arrange(naics_level, naics)
+
+# eyeball 2, 3, and 4 digit sums of wages
+check <- qcew1 |>
+  filter(areatype == "state") |>
+  mutate(group = ifelse(naics == "00", 1, naics_level)) |>
+  summarise(
+    totwage = sum(totwage),
+    .by = c(date, group)
+  ) |>
+  pivot_wider(
+    names_from = group,
+    values_from = totwage,
+    names_prefix = "group"
+  ) |>
+  mutate(
+    apdiff2 = abs(group2 / group1 - 1),
+    apdiff3 = abs(group3 / group1 - 1),
+    apdiff4 = abs(group4 / group1 - 1)
+  )
+
+# DON'T worry about private or education
+# select quarters to use for estimation of bonuses -- based on apdiff3 being small
+#  estimate those bonuses
+#  estimate total another way e.g., loess
+#  compare where we have both
+#  use comparison to estimate bonuses in missing-data quarters
+
+usable_dates <- check |> filter(apdiff3 < 0.01) |> pull(date)
+length(usable_dates) / nrow(check) # 90%
+
+bonus1 <- qcew1 |>
+  filter(
+    areatype == "state",
+    date %in% usable_dates,
+    naics_level == 3
+  ) |>
+  select(date, naics, naics_title, totwage, empq)
+
+# define bonus year as quarters 2, 3, and 4 plus the following quarter 1
+# drop years that don't have 4 quarters of data
+bonus2 <- bonus1 |>
+  mutate(bonus_year = ifelse(quarter(date) == 1, year(date) - 1, year(date))) |>
+  mutate(nquarters = n(), .by = c(naics, bonus_year)) |>
+  filter(nquarters == 4)
+
+
+qcew2 <- qcew |>
+  filter(
+    naics %in% c("00", "52", "523"),
+    areatype == "state"
+  ) |>
+  select(date, naics, naics_title, empq, totwage) |>
+  mutate(
+    indname = factor(
+      naics,
+      levels = c("00", "52", "523"),
+      labels = c("total", "naics52", "naics523")
+    ),
+    quarter = quarter(date),
+  )
+
+skimr::skim(qcew2)
+
+```
+
+
+## Other
+
+```{r}
+#| label: explore
+
+qcew3 <- qcew2 |>
+  filter(naics != "52") |>
+  select(date, quarter, indname, totwage, empq) |>
+  pivot_longer(
+    cols = c(totwage, empq),
+    names_to = "measure",
+    values_to = "value"
+  ) |>
+  pivot_wider(names_from = indname, values_from = value) |>
+  mutate(non523 = total - naics523) |>
+  pivot_longer(
+    cols = -c(date, quarter, measure),
+    names_to = "indname",
+    values_to = "value"
+  ) |>
+  pivot_wider(names_from = measure, values_from = value) |>
+  mutate(avgwage = totwage / empq * 4)
+
+qcew3 |>
+  ggplot(aes(x = date, y = totwage, color = indname)) +
+  geom_line() +
+  geom_point()
+
+qcew3 |>
+  ggplot(aes(x = date, y = avgwage, color = indname)) +
+  geom_line() +
+  geom_point()
+
+```
+
+```{r}
+# Compute average wages per employee for quarters 2 and 3 combined and call them “base wages” (i.e., non-bonus wages).
+
+# Compute average wages per employee for quarter 4 and for quarter 1 and call them bonus-including wages.
+# Subtract base wages from bonus-including wages for quarter 4 and quarter 1 to get average bonus per employee in quarters 4 and 1 respectively.
+# Multiply average bonus per employee by number of employees to get total bonus wages for quarter 4 and for quarter 1.
+# Add quarter 4 and quarter 1 total bonus wages to get total bonus wages for the bonus year.
+
+```
