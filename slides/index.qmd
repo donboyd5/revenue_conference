@@ -189,11 +189,19 @@ p <- pdata |>
   ) +
   ggtitle("NYS employment % change vs. year ago") +
   scale_x_date(name = NULL, date_breaks = "3 months", date_labels = "%b %Y") +
+  labs(
+    caption = "Sources: Bureau of Labor Statistics (CES) and New York Federal Reserve Bank (early benchmark)"
+  ) +
   theme_presentation() +
   theme_rotate(angle = 45) +
   theme(
-    legend.title = element_blank(),
     panel.grid.minor.y = element_line(color = "gray85", linewidth = 0.3)
+  ) +
+  theme(
+    legend.title = element_blank(),
+    legend.position = c(0.85, 0.85),
+    legend.background = element_rect(fill = "white", color = "gray80"),
+    legend.key.size = unit(1.5, "lines")
   )
 
 p
@@ -630,7 +638,7 @@ piagi |>
 
 ```
 
-# Withholding tax collections
+# Wages and withholding
 
 ## Wages
 
@@ -657,8 +665,75 @@ wages2 <- wages |>
   select(date, ind, totwage) |>
   pivot_wider(names_from = ind, values_from = totwage)
 
-# wages2 |>
-#   mutate(across(c(finance, securities, exchanges, other), \(x) x / finance))
+wages2 |>
+  mutate(
+    finshare = finance / total,
+    across(c(finance, securities, exchanges, other), \(x) x / finance)
+  )
+
+wages3 <- wages2 |> select(date, total, finance)
+
+```
+
+```{r}
+#| label: wages-plot
+#| output: true
+
+pdata <- wages3 |>
+  rename(value = finance) |>
+  filter(year(date) >= 2022) |>
+  mutate(
+    year = year(date) |> as.integer(),
+    qtr = factor(
+      paste0("Q", lubridate::quarter(date)),
+      levels = c("Q1", "Q2", "Q3", "Q4")
+    )
+  )
+
+yr_min <- min(pdata$year)
+yr_max <- max(pdata$year)
+
+facet_means <- pdata |>
+  summarise(mean_value = mean(value, na.rm = TRUE), .by = qtr)
+
+pdata |>
+  ggplot(aes(x = year, y = value)) +
+  geom_line(aes(group = 1), color = "steelblue", na.rm = TRUE) +
+  geom_point(na.rm = TRUE) +
+  geom_hline(
+    data = facet_means,
+    aes(yintercept = mean_value),
+    color = "red",
+    linetype = "solid",
+    linewidth = 0.5,
+    inherit.aes = FALSE
+  ) +
+  facet_wrap(~qtr, nrow = 1, scales = "fixed") + # one row, same y-axis across months
+  scale_x_continuous(
+    breaks = seq(yr_min, yr_max, by = 1),
+    expand = expansion(add = c(0.4, 0.4)) # add internal left/right padding
+  ) +
+  scale_y_continuous(
+    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 0.1),
+    breaks = seq(0, 100e9, by = 10e9),
+    # limits = c(0, NA)
+  ) +
+  theme_presentation() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 0),
+    plot.caption = ggtext::element_markdown(),
+  ) +
+  theme_rotate(angle = 90) +
+  ggtitle(
+    "QCEW Financial Sector (NAICS 523) Wages by Quarter, Calendar years 2023-2025",
+    subtitle = "Red horizontal line is quarterly mean"
+  ) +
+  labs(
+    y = "$ billions",
+    x = NULL,
+    caption = "Source: U.S. Bureau of Labor Statistics via NYS Department of Labor<br>**CAUTION: Vertical axis does not start at zero**"
+  )
 
 ```
 
@@ -668,14 +743,14 @@ wages2 <- wages |>
 ```{r}
 #| label: wh-plot
 #| output: true
-#| fig-width: 11
+#| fig-width: 14
 #| fig-height: 9
 
 # create a gg_subseries style plot but with control over the details
 
 pdata <- pitsut |>
   filter(vname == "pit_wh") |>
-  filter(year(date) >= 2023) |>
+  filter(year(date) >= 2022) |>
   mutate(
     year = year(date),
     mon = factor(month(date, label = TRUE), levels = month.abb)
@@ -717,7 +792,7 @@ pdata |>
   ) +
   theme_rotate(angle = 90) +
   ggtitle(
-    "PIT Withholding Tax Collections by Month, Calendar years 2023-2025",
+    "PIT Withholding Tax Collections by Month, Calendar years 2022-2025",
     subtitle = "Red horizontal line is monthly mean"
   ) +
   labs(
