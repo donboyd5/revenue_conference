@@ -115,7 +115,9 @@ pop |>
     breaks = seq(-400e3, 400e3, 100e3)
   ) +
   ggtitle("Annual Changes in New York State Population Since 2020 Census") +
-  labs(caption = "Source: U.S. Census Bureau Population Estimates Program") +
+  labs(
+    caption = "Source: U.S. Census Bureau Population Estimates Program\nChanges are from July 1 to July 1"
+  ) +
   facet_wrap(~variable, ncol = 2, scales = "fixed") +
   theme_presentation() +
   theme(
@@ -128,7 +130,9 @@ pop |>
 
 <!-- ## Employment -->
 
-## NY Fed early benchmark: Downward revisions ahead?
+<!-- ## Downward NYS employment revisions ahead? -->
+
+## <span style="font-size: 0.9em;">Downward NYS employment revisions ahead?</span>
 
 ```{r}
 #| label: employment-bench-nonbench-pchya
