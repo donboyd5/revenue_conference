@@ -1,6 +1,6 @@
 ---
 title: "New York Tax Revenue and the Economy"
-subtitle: "NYS Consensus Economic and Revenue Forecasting Conference"
+subtitle: "NYS Consensus Economic and Revenue<br> Forecasting Conference"
 author: "Don Boyd"
 date: "2026-02-27"
 date-format: long
@@ -10,11 +10,12 @@ format:
     chalkboard:
       buttons: false
     preview-links: auto
-    # logo: images/quarto.png
-    # css: styles.css
+    footer: '<img src="images/UAlbany_Minerva_Informal_Left_Purple.png" height="50" alt="logo">'  # UAlbany_Minerva_Informal_Left_Purple UAlbany_logo_purple_and_gold_cropped UAlbany_Minerva_Formal_Left_Purple
+    css: styles.css
     # footer: '[https://{{< meta prerelease-subdomain >}}quarto.org](https://{{< meta prerelease-subdomain >}}quarto.org)'
   # pdf:
   #   output-file: slides.pdf
+  #  pptx: default
 number-sections: false
 bibliography: references.bib
 nocite: '@*'
@@ -26,12 +27,19 @@ execute:
 
 ## Revenue forecasters' woes
 
--  We don't know the present -- substantial data lags
--  The past isn't what it used to be - potentially large data revisions
--  The economy we measure is not the economy we tax
--  We must forecast not just what people owe, but when they will pay it
+-  We don't truly know the present -- substantial data lags
+-  The past isn't what it used to be -- data revisions
+-  The economy we measure is not quite the economy we tax
+-  Must forecast *when* people pay, in addition to *what* they owe
 
-Each woe increases the risk that financial managers face.
+Each issue adds to forecast risk.
+
+::: {.notes}
+Lags - PIT data from tax returns -- 2023 is latest full file
+Data revisions -- employment data
+Economy we tax -- capital gains
+When people pay -- estimated tax and final returns
+:::
 
 
 ```{r}
@@ -48,15 +56,19 @@ source(fs::path(GITROOT, "setup.R"))
 
 pop <- readRDS(fs::path(DDATA, "ny_state_population_estimates_1970_2024.rds"))
 nyspi <- readRDS(fs::path(DDATA, "bea_nyspi.rds"))
+pitsut <- readRDS(fs::path(DDATA, "pitsut.rds"))
 nysagi <- readRDS(fs::path(DPITNY, "nypitds2.rds"))
-qcew <- readRDS(fs::path(DQCEW, "qcewstcoq.rds")) # takes a long time, winnow it down
-ces <- readRDS(fs::path(DCES, "ces_data_2026-02-03.rds")) # same
+qcew <- readRDS(fs::path(DQCEW, "qstcoq_4digits_max.rds")) # a subset for speed
+qcew_emp <- readRDS(fs::path(DQCEW, "qcew_monthly_employment.rds"))
+ces_states <- readRDS(fs::path(DCES, "ces_emp_states.rds"))
+cesny <- readRDS(fs::path(DCES, "cesny.rds"))
 ebench <- readRDS(fs::path(DFEDNY, "early-benchmarked-employment_data.rds"))
 
 ```
 
-
 # Where we are now
+
+<!-- ## <span style="font-size: 0.8em;">Population change since the 2020 Census</span> -->
 
 ## Population change since the 2020 Census
 
@@ -103,7 +115,9 @@ pop |>
     breaks = seq(-400e3, 400e3, 100e3)
   ) +
   ggtitle("Annual Changes in New York State Population Since 2020 Census") +
-  labs(caption = "Source: U.S. Census Bureau Population Estimates Program") +
+  labs(
+    caption = "Source: U.S. Census Bureau Population Estimates Program\nChanges are from July 1 to July 1"
+  ) +
   facet_wrap(~variable, ncol = 2, scales = "fixed") +
   theme_presentation() +
   theme(
@@ -114,21 +128,20 @@ pop |>
 ```
 
 
-## Employment
+<!-- ## Employment -->
+
+<!-- ## Downward NYS employment revisions ahead? -->
+
+## <span style="font-size: 0.9em;">Downward NYS employment revisions ahead?</span>
 
 ```{r}
 #| label: employment-bench-nonbench-pchya
 
 # compare NY Fed early benchmarked employment data to CES seasonally adjusted data
 
-cesbase <- ces |>
-  filter(
-    state_code == "36",
-    area_code == "00000",
-    supersector_code == "00",
-    data_type_code == "01",
-    seasonal == "S"
-  ) |>
+cesbase <- cesny |>
+  filter(area_code == "00000", supersector_code == "00", seasonal == "S") |>
+  arrange(date) |>
   mutate(src = "ces") |>
   select(date, src, value)
 
@@ -142,21 +155,23 @@ pdata <- bind_rows(cesbase, ebenchbase) |>
   arrange(date) |>
   mutate(pchya = value / lag(value, 12) - 1, .by = src)
 
-# for a table
-pchya <- pdata |>
-  mutate(year = year(date)) |>
-  summarise(avgemp = mean(value), .by = c(year, src)) |>
-  arrange(year, src) |>
-  mutate(pchya = avgemp / lag(avgemp) - 1, .by = src)
-
 ```
 
 ```{r}
 #| label: show-employment-benchmark
 #| output: true
+#| fig-width: 11
+#| fig-height: 6.2
+#| fig-retina: 2
 
-# professional colors consistent with other plots
-emp_colors <- c(ces = "#0072B2", ebench = "#009E73")
+# # | fig-width: 17.8
+# # | fig-height: 10
+
+emp_colors <- c(
+  ces = "steelblue",
+  ebench = "coral"
+)
+
 emp_labels <- c(
   ces = "Official employment (CES)",
   ebench = "Early benchmark (NY Fed)"
@@ -165,27 +180,119 @@ emp_labels <- c(
 p <- pdata |>
   filter(year(date) >= 2022) |>
   ggplot(aes(date, pchya, colour = src)) +
-  geom_line(linewidth = 1) +
-  geom_point(size = 1) +
+  geom_line() + # linewidth = 1
+  geom_point() + # size = 1
   geom_hline(yintercept = 0, linetype = "solid", color = "blue") +
   scale_colour_manual(values = emp_colors, labels = emp_labels, name = NULL) +
   scale_y_continuous(
     name = "% change",
-    labels = scales::label_percent(accuracy = 0.1),
-    breaks = seq(-0.1, 0.2, 0.005)
+    labels = scales::label_percent(accuracy = 1),
+    breaks = seq(-0.1, 0.2, 0.01),
+    minor_breaks = seq(-0.01, 0.20, 0.005), # minor ticks every 0.5%
+    limits = c(-0.005, NA)
   ) +
   ggtitle("NYS employment % change vs. year ago") +
   scale_x_date(name = NULL, date_breaks = "3 months", date_labels = "%b %Y") +
+  labs(
+    caption = "Sources: Bureau of Labor Statistics (CES) and New York Federal Reserve Bank (early benchmark)"
+  ) +
   theme_presentation() +
   theme_rotate(angle = 45) +
-  theme(legend.title = element_blank())
+  theme(
+    panel.grid.minor.y = element_line(color = "gray85", linewidth = 0.3)
+  ) +
+  theme(
+    legend.title = element_blank(),
+    legend.position = c(0.85, 0.85),
+    legend.background = element_rect(fill = "white", color = "gray80"),
+    legend.key.size = unit(1.5, "lines")
+  )
 
 p
 
 ```
 
-# Linking economic and tax-revenue forecasts
 
+## DOB employment forecast seems less pessimistic in context of early benchmark
+
+```{r}
+#| label: dob-nyseea-cy-growth
+
+# see figure on p.41 of FY2027 ero
+
+dobeea <- tribble(
+  ~year , ~pchya ,
+   2019 ,  0.012 ,
+   2020 , -0.10  ,
+   2021 ,  0.027 ,
+   2022 ,  0.051 ,
+   2023 ,  0.022 ,
+   2024 ,  0.026 ,
+   2025 ,  0.004 ,
+   2026 ,  0.002 ,
+   2027 ,  0.005 ,
+   2028 ,  0.005 ,
+   2029 ,  0.005
+) |>
+  mutate(src = "dob")
+
+
+```
+
+<br>
+
+```{r}
+#| label: employment-bench-pchya-table
+#| output: true
+
+# for a table
+pchya <- pdata |>
+  mutate(year = year(date)) |>
+  summarise(avgemp = mean(value), .by = c(year, src)) |>
+  arrange(year, src) |>
+  mutate(pchya = avgemp / lag(avgemp) - 1, .by = src)
+
+data <- bind_rows(pchya, dobeea) |>
+  filter(year >= 2019) |>
+  select(year, src, pchya)
+
+levs <- c("ces", "ebench", "dob")
+
+labs <- c(
+  ces = "Official employment (CES)",
+  ebench = "Early benchmark (NY Fed)",
+  dobeea = "Executive budget (DOB)"
+)
+
+data |>
+  filter(year %in% 2023:2027) |>
+  mutate(src = factor(src, levels = levs, labels = labs)) |>
+  pivot_wider(names_from = year, values_from = pchya, names_prefix = "y") |>
+  arrange(src) |>
+  gt() |>
+  tab_header(
+    "NYS Employment History and Forecast",
+    subtitle = "% Change vs. prior calendar year"
+  ) |>
+  cols_label(
+    src = "Source",
+    y2023 = "2023",
+    y2024 = "2024",
+    y2025 = "2025",
+    y2026 = "2026",
+    y2027 = "2027"
+  ) |>
+  cols_align(align = "left", columns = src) |>
+  fmt_percent(columns = -src, decimals = 1) |>
+  sub_missing(columns = -src, missing_text = "-") |>
+  tab_source_note(
+    "Sources: U.S. Bureau of Labor Statistics (CES), New York Federal Reserve Bank (NY Fed), and NYS Division of the Budget (DOB)"
+  )
+
+```
+
+
+# Linking economic and tax-revenue forecasts
 ```{r}
 #| label: get-agi-pi-data
 
@@ -239,7 +346,7 @@ pdata <- piagi |>
 
 <!-- ## Economic and tax-base variables often diverge -->
 
-## <span style="font-size: 0.8em;">Economic and tax-base variables often diverge</span>
+## Economic and tax-base variables often diverge
 
 ```{r}
 #| label: piagi-growth-plot
@@ -349,30 +456,6 @@ agibase2 <- agibase |>
 piagi <- agibase2 |>
   pivot_longer(cols = -year, names_to = "variable", values_to = "value") |>
   bind_rows(pibase)
-
-# vars <- c("nyspi", "nysagi", "wages", "capnet", "other")
-# piagi |>
-#   filter(variable != "other") |>
-#   arrange(variable, year) |>
-#   mutate(
-#     pchya = value / lag(value) - 1,
-#     .by = variable,
-#     variable = factor(variable, levels = vars)
-#   ) |>
-#   arrange(variable, year) |>
-#   ggplot(aes(year, pchya, colour = variable)) +
-#   geom_line() +
-#   geom_point() +
-# geom_hline(yintercept = 0)
-
-# agibase |> mutate(check=wages+intdiv+capnet+rrpetnet+busfarmnet+pensions+otherinc+allother - nysagi) |> summarize(max_abs_check = max(abs(check)))
-
-# agibase2 |>
-#   mutate(across(-year, \(x) x - lag(x)))
-
-# agibase2 |>
-#   mutate(across(-year, \(x) x - lag(x))) |>
-#   mutate(across(-c(year, nysagi), \(x) x / nysagi))
 
 ```
 
@@ -545,7 +628,9 @@ piagi |>
     labels = scales::label_percent(accuracy = 1)
   ) +
   scale_x_continuous(name = NULL, breaks = 2015:2024) +
-  ggtitle("Growth Rates of Personal Income, AGI, and Major Components") +
+  ggtitle(
+    "Growth Rates of Personal Income, AGI, and Major Components"
+  ) +
   labs(caption = "Sources: BEA and NYS Department of Taxation and Finance") +
   theme_presentation() +
   theme(
@@ -556,6 +641,176 @@ piagi |>
   )
 
 ```
+
+# Wages and withholding
+
+## Wages
+
+```{r}
+
+tmp <- count(qcew, naics_level, naics, naics_title)
+
+wages <- qcew |>
+  filter(areatype == "state") |>
+  filter(naics == "00" | str_starts(naics, "523")) |>
+  select(-c(areatype, area, estab, contains("emp")))
+
+wages2 <- wages |>
+  mutate(
+    ind = case_when(
+      naics == "00" ~ "total",
+      naics == "523" ~ "finance",
+      naics == "5231" ~ "securities",
+      naics == "5232" ~ "exchanges",
+      naics == "5239" ~ "other",
+      .default = "ERROR"
+    )
+  ) |>
+  select(date, ind, totwage) |>
+  pivot_wider(names_from = ind, values_from = totwage)
+
+wages2 |>
+  mutate(
+    finshare = finance / total,
+    across(c(finance, securities, exchanges, other), \(x) x / finance)
+  )
+
+wages3 <- wages2 |> select(date, total, finance)
+
+```
+
+```{r}
+#| label: wages-plot
+#| output: true
+
+pdata <- wages3 |>
+  rename(value = finance) |>
+  filter(year(date) >= 2022) |>
+  mutate(
+    year = year(date) |> as.integer(),
+    qtr = factor(
+      paste0("Q", lubridate::quarter(date)),
+      levels = c("Q1", "Q2", "Q3", "Q4")
+    )
+  )
+
+yr_min <- min(pdata$year)
+yr_max <- max(pdata$year)
+
+facet_means <- pdata |>
+  summarise(mean_value = mean(value, na.rm = TRUE), .by = qtr)
+
+pdata |>
+  ggplot(aes(x = year, y = value)) +
+  geom_line(aes(group = 1), color = "steelblue", na.rm = TRUE) +
+  geom_point(na.rm = TRUE) +
+  geom_hline(
+    data = facet_means,
+    aes(yintercept = mean_value),
+    color = "red",
+    linetype = "solid",
+    linewidth = 0.5,
+    inherit.aes = FALSE
+  ) +
+  facet_wrap(~qtr, nrow = 1, scales = "fixed") + # one row, same y-axis across months
+  scale_x_continuous(
+    breaks = seq(yr_min, yr_max, by = 1),
+    expand = expansion(add = c(0.4, 0.4)) # add internal left/right padding
+  ) +
+  scale_y_continuous(
+    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 0.1),
+    breaks = seq(0, 100e9, by = 10e9),
+    # limits = c(0, NA)
+  ) +
+  theme_presentation() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 0),
+    plot.caption = ggtext::element_markdown(),
+  ) +
+  theme_rotate(angle = 90) +
+  ggtitle(
+    "QCEW Financial Sector (NAICS 523) Wages by Quarter, Calendar years 2023-2025",
+    subtitle = "Red horizontal line is quarterly mean"
+  ) +
+  labs(
+    y = "$ billions",
+    x = NULL,
+    caption = "Source: U.S. Bureau of Labor Statistics via NYS Department of Labor<br>**CAUTION: Vertical axis does not start at zero**"
+  )
+
+```
+
+
+## {.no-title}
+
+```{r}
+#| label: wh-plot
+#| output: true
+#| fig-width: 14
+#| fig-height: 9
+
+# create a gg_subseries style plot but with control over the details
+
+pdata <- pitsut |>
+  filter(vname == "pit_wh") |>
+  filter(year(date) >= 2022) |>
+  mutate(
+    year = year(date),
+    mon = factor(month(date, label = TRUE), levels = month.abb)
+  )
+
+yr_min <- min(lubridate::year(pdata$date))
+yr_max <- max(lubridate::year(pdata$date))
+
+facet_means <- pdata |>
+  summarise(mean_value = mean(value, na.rm = TRUE), .by = mon)
+
+pdata |>
+  ggplot(aes(x = year, y = value)) +
+  geom_line(aes(group = 1), color = "steelblue", na.rm = TRUE) +
+  geom_point(na.rm = TRUE) +
+  geom_hline(
+    data = facet_means,
+    aes(yintercept = mean_value),
+    color = "red",
+    linetype = "solid",
+    linewidth = 0.5,
+    inherit.aes = FALSE
+  ) +
+  facet_wrap(~mon, nrow = 1, scales = "fixed") + # one row, same y-axis across months
+  scale_x_continuous(
+    breaks = seq(yr_min, yr_max, by = 1),
+    expand = expansion(add = c(0.4, 0.4)) # add internal left/right padding
+  ) +
+  scale_y_continuous(
+    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 0.1),
+    breaks = seq(0, 10e9, by = 500e6),
+    # limits = c(0, NA)
+  ) +
+  theme_presentation() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 0),
+    plot.caption = ggtext::element_markdown(),
+  ) +
+  theme_rotate(angle = 90) +
+  ggtitle(
+    "PIT Withholding Tax Collections by Month, Calendar years 2022-2025",
+    subtitle = "Red horizontal line is monthly mean"
+  ) +
+  labs(
+    y = "$ billions",
+    x = NULL,
+    # x = "Calendar year",
+    caption = "Source: NYS Department of Taxation and Finance<br>**CAUTION: Vertical axis does not start at zero**"
+  )
+
+```
+
+## Recent news from other states
+
+
 
 ## Revenue
 
@@ -589,8 +844,6 @@ Table or bar chart -- AGI and personal income
 
 ::: {#refs style="font-size: 0.7em;"}
 :::
-
-
 
 ```{r}
 #| label: experimental-employment
@@ -656,8 +909,7 @@ wide |>
 # library(feasts)
 # library(tsibble)
 
-# Convert to tsibble (time series tibble)
-# Convert to tsibble with monthly interval
+# Convert to tsibble (time series tibble) with monthly interval
 wide_ts <- wide |>
   filter(!is.na(pdiff)) |>
   mutate(month = yearmonth(date)) |>

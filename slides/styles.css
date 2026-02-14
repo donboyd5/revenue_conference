@@ -1,0 +1,11 @@
+/* styles.css */
+/* .reveal .slides section h2 { */
+
+.reveal section h2 {
+  font-size: 1.4em !important;
+}
+
+.reveal .slides section.no-title > h2 { display: none; }
+.reveal .slides section.no-title { padding-top: 0; }
+.reveal .slides section.no-title .content,
+.reveal .slides section.no-title .cell { margin-top: 0; }

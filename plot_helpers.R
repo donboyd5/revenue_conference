@@ -87,5 +87,5 @@ theme_rotate <- function(angle = 90, axis = "x", hjust = 1, vjust = NULL) {
   }
 }
 
-update_geom_defaults("line", list(linewidth = 2))
-update_geom_defaults("point", list(size = 3))
+update_geom_defaults("line", list(linewidth = 1.5))
+update_geom_defaults("point", list(size = 2))

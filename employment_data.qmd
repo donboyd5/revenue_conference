@@ -25,10 +25,12 @@ source(fs::path(GITROOT, "setup.R"))
 ```
 
 
-## Data from BLS via BLSloadR
+## Get BLS employment data via BLSloadR and save streamlined version
 
 ```{r}
 #| eval: false
+
+# ONETIME
 
 # https://cran.r-project.org/web/packages/BLSloadR/BLSloadR.pdf
 # library("BLSloadR")
@@ -40,84 +42,149 @@ saveRDS(ces_data, fs::path(DCES, fname))
 ```
 
 ```{r}
+#| eval: false
+
+# ONETIME
 
 # time consuming
 fname <- "ces_data_2026-02-03.rds"
-ces <- readRDS(fs::path(DCES, fname))
+system.time(ces <- readRDS(fs::path(DCES, fname))) # 19 secs
 
 ```
 
+
+```{r}
+#| label: create-compact tibble
+#| eval: false
+
+# ONETIME get rid of unnecessary stuff
+
+str(ces) # data.table, data.frame
+names(attributes(ces))
+ces2 <- attr(ces, "bls_diagnostics")$data |> as_tibble()
+attributes(ces2)
+saveRDS(ces2, fs::path(DCES, "ces_tibble.rds"))
+
+# get some stats
+count(ces2, seasonal)
+#    seasonal       n
+#      <char>   <int>
+# 1:        S 1162521
+# 2:        U 8287787
+
+count(ces2, state_code, state_name)
+tmp <- count(ces2, industry_code, industry_name) # 00000000 is total nonfarm
+tmp2 <- count(ces2, data_type_code, data_type_text) # 01 is all employees
+
+```
+
+### Get compact data
+
 ```{r}
 
-glimpse(ces)
-summary(ces)
+system.time(ces <- readRDS(fs::path(DCES, "ces_tibble.rds"))) # somewhat faster 8.7  secs
 
-inds <- count(ces, supersector_code, industry_code, industry_name)
+```
 
-cesny <- ces |>
-  filter(state_code == "36", area_code == "00000", supersector_code == "00")
+### Save CES states subset for faster loading
 
-count(cesny, data_type_code, data_type_text)
-count(cesny, data_type_code, seasonal)
+```{r}
+#| label: ces-states-subset
 
-cesny |>
-  filter(data_type_code == "01") |>
-  filter(year(date) >= 2023) |>
+# create a states total employment file
+
+fips <- tidycensus::fips_codes |>
+  distinct(state_code, state) |> # state_code is two-digit string, state is postal abbr
+  rename(stabbr = state) |>
+  as_tibble()
+
+ces_emp_states <- ces |>
+  filter(
+    area_code == "00000",
+    industry_code == "00000000",
+    data_type_code == "01"
+  ) |>
+  left_join(fips, by = join_by(state_code)) |>
+  select(series_id, stabbr, state_code, state_name, seasonal, date, value)
+count(ces_emp_states, stabbr, state_code, state_name)
+
+saveRDS(ces_emp_states, fs::path(DCES, "ces_emp_states.rds"))
+
+```
+
+
+```{r}
+#| label: look-states
+
+system.time(ces_states <- readRDS(fs::path(DCES, "ces_emp_states.rds")))
+
+update_geom_defaults("line", list(linewidth = 1))
+update_geom_defaults("point", list(size = 1))
+ces_emp_states |>
+  filter(stabbr == "NY") |>
+  filter(year(date) >= 2022) |>
   ggplot(aes(date, value, colour = seasonal)) +
   geom_line() +
   geom_point()
 
-cesny |>
-  filter(data_type_code == "01") |>
-  select(date, value, seasonal) |>
-  pivot_wider(names_from = seasonal, values_from = value) |>
-  filter(year(date) >= 2023)
-
-ces |>
-  filter(
-    state_code == "36",
-    area_code == "00000",
-    supersector_code %in% c("06", "07")
+ces_emp_states |>
+  filter(stabbr %in% c("NY", "NJ", "MA", "CT", "PA"), seasonal == "S") |>
+  filter(year(date) >= 2023) |>
+  mutate(
+    ivalue = value / value[date == min(date)] * 100,
+    .by = c(stabbr, seasonal)
   ) |>
-  filter(data_type_code == "01", seasonal == "S") |>
-  # filter(year(date) >= 2010) |>
-  filter(year(date) >= 2022) |>
-  # filter(year(date) >= 2023) |>
-  mutate(idate = min(date)) |>
-  mutate(idx = value / value[date == idate] * 100, .by = supersector_name) |>
-  ggplot(aes(date, idx, colour = supersector_name)) +
+  ggplot(aes(date, ivalue, colour = stabbr)) +
   geom_line() +
   geom_point()
 
+update_geom_defaults("line", list(linewidth = 2))
+update_geom_defaults("point", list(size = 3))
+
 ```
+
+### Save CES NY subset for faster loading
 
 ```{r}
+#| label: ces-ny-subset
 
-laus_states <- get_laus()
-laus_states_unadjusted <- get_laus("state_unadjusted")
+inds <- count(ces, supersector_code, industry_code, industry_name)
+count(ces, data_type_code, data_type_text)
 
-laus_states_unadjusted |>
+cesny <- ces |>
   filter(
-    area_text == "New York",
-    measure_text == "employment",
-    year(date) >= 2022
-  )
+    state_code == "36",
+    data_type_code == "01"
+  ) |>
+  select(-c(state_code, state_name, data_type_code, data_type_text)) |>
+  relocate(value, .after = date)
 
-tmp <- laus_states |>
-  filter(area_text == "New York")
-
-tmp |>
-  filter(measure_text == "employment") |>
-  ggplot(aes(x = date, y = value)) +
-  geom_line() +
-  geom_point() +
-  theme_minimal()
+saveRDS(cesny, fs::path(DCES, "cesny.rds"))
 
 ```
+
+
+```{r}
+#| label: cesny-look
+#| eval: false
+
+glimpse(cesny)
+
+cesny |>
+  filter(year(date) >= 2023) |>
+  filter(area_code == "00000", supersector_code == "00") |>
+  ggplot(aes(date, value, colour = seasonal)) +
+  geom_line() +
+  geom_point()
+
+
+```
+
 
 ## New York Fed early benchmark data
 
 ```{r}
+#| label: nyfed-early-benchmark
 
 empnyfed1 <- vroom::vroom(fs::path(
   DFEDNY,
@@ -150,10 +217,11 @@ empnyfed2 |>
 
 ```
 
-## Data from NY State
-
+## CES data from NY State data.ny.gov -- NOT implemented
 
 ```{r}
+#| label: ces-data.ny.gov
+#| eval: false
 
 # https://data.ny.gov/Economic-Development/Current-Employment-Statistics-Beginning-1990/6k74-dgkb
 # url <- "https://data.ny.gov/a1177f73-6628-4654-b8d3-25cc2335bf5b"
@@ -166,6 +234,7 @@ download.file(url, destfile = fs::path(DCESNY, fname))
 ```
 
 ```{r}
+#| eval: false
 
 # These data are NS except for NYS totals
 fname <- "Current_Employment_Statistics__Beginning_1990.csv"
@@ -196,6 +265,8 @@ count(cesny1, area, areaname) # nys 00000; nyc 93561; 28 counties; 13 areas
 ```
 
 ```{r}
+#| eval: false
+
 cesny1 |>
   filter(area == "00000", series == "00000000", rectype == "annual") |>
   ggplot(aes(year, emp)) +
@@ -245,5 +316,33 @@ cesny1 |>
   arrange(date) |>
   mutate(pchya = emp / lag(emp, 12) - 1, .by = c(area, series, rectype)) |>
   filter(year >= 2023)
+
+```
+
+
+## LAUS data via BLSloadR -- not yet implemented
+
+```{r}
+#| eval: false
+
+laus_states <- get_laus()
+laus_states_unadjusted <- get_laus("state_unadjusted")
+
+laus_states_unadjusted |>
+  filter(
+    area_text == "New York",
+    measure_text == "employment",
+    year(date) >= 2022
+  )
+
+tmp <- laus_states |>
+  filter(area_text == "New York")
+
+tmp |>
+  filter(measure_text == "employment") |>
+  ggplot(aes(x = date, y = value)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal()
 
 ```
