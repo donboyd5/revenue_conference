@@ -24,7 +24,6 @@ Total variable pay is then calculated by multiplying the average bonus payment b
 ```{r}
 #| label: setup
 
-rm(list = ls())
 GITROOT <- rprojroot::find_root(rprojroot::has_file(".git/index"))
 source(fs::path(GITROOT, "setup.R"))
 
@@ -44,24 +43,39 @@ Total variable pay is then calculated by multiplying the average bonus payment b
 
 ## DOB forecast approach
 
-The first step involves estimating a bonus payments model for the finance and insurance sector, since these bonuses are largely exogenous to wages paid in the remainder of the State economy. Because bonus payments for the remaining sectors have been found to have long-term equilibrium relationships with finance and insurance sector bonuses, these relationships are estimated in the second step. Feedback from Wall Street to the other sectors of the State economy can be substantial, especially for business services. In the final step, these long-term relationships are incorporated into the bonus estimating equations for the remaining sectors within an error correction framework.  Revenues of the New York Stock Exchange (NYSE) member firms explain much of the variation in finance and insurance sector bonuses. Among the major drivers of revenues are two types of Wall Street underwriting activities – the dollar volume of initial public offerings (IPOs) and the value of debt underwritings. DOB forecasts these two variables first based on the interest rate and equity market forecasts provided by DOB/U.S. Traditionally, finance and insurance sector bonuses have been paid out in December or the following January and February, based roughly on the firm’s performance for the calendar year ending in December. Consequently, the finance and insurance sector bonus series are converted from a quarterly to a fiscal year frequency, while the explanatory variables are annualized on a calendar year basis. The forecast is then converted back to a quarterly series based on the most recent fiscal year’s pattern. See below for the finance and insurance sector bonus estimation equation.
+The first step involves estimating a bonus payments model for the finance and insurance sector, since these bonuses are largely exogenous to wages paid in the remainder of the State economy.
+
+Because bonus payments for the remaining sectors have been found to have long-term equilibrium relationships with finance and insurance sector bonuses, these relationships are estimated in the second step. Feedback from Wall Street to the other sectors of the State economy can be substantial, especially for business services.
+
+In the final step, these long-term relationships are incorporated into the bonus estimating equations for the remaining sectors within an error correction framework.
+
+Revenues of the New York Stock Exchange (NYSE) member firms explain much of the variation in finance and insurance sector bonuses. Among the major drivers of revenues are two types of Wall Street underwriting activities – the dollar volume of initial public offerings (IPOs) and the value of debt underwritings. DOB forecasts these two variables first based on the interest rate and equity market forecasts provided by DOB/U.S.
+
+Traditionally, finance and insurance sector bonuses have been paid out in December or the following January and February, based roughly on the firm’s performance for the calendar year ending in December. Consequently, the finance and insurance sector bonus series are converted from a quarterly to a fiscal year frequency, while the explanatory variables are annualized on a calendar year basis. The forecast is then converted back to a quarterly series based on the most recent fiscal year’s pattern.
+
+See below for the finance and insurance sector bonus estimation equation.
 
 ## Get data
 
 ```{r}
 
-qcew1 <- readRDS(fs::path(DQCEW, "qstcoq_4digits_max.rds"))
+qcew1 <- readRDS(fs::path(DQCEW, "qstcoq_4digits_max.rds")) # this only has total owners
 
 inds <- count(qcew1, naics_level, naics, naics_title) |>
   arrange(naics_level, naics)
 
-# eyeball 2, 3, and 4 digit sums of wages
-check <- qcew1 |>
+qcew2 <- qcew1 |>
   filter(areatype == "state") |>
-  mutate(group = ifelse(naics == "00", 1, naics_level)) |>
+  mutate(
+    bonus_year = ifelse(quarter(date) == 1, year(date) - 1, year(date)),
+    group = ifelse(naics == "00", 1, naics_level)
+  )
+
+# eyeball 2, 3, and 4 digit sums of wages
+check <- qcew2 |>
   summarise(
     totwage = sum(totwage),
-    .by = c(date, group)
+    .by = c(bonus_year, date, group)
   ) |>
   pivot_wider(
     names_from = group,
@@ -81,41 +95,190 @@ check <- qcew1 |>
 #  compare where we have both
 #  use comparison to estimate bonuses in missing-data quarters
 
-usable_dates <- check |> filter(apdiff3 < 0.01) |> pull(date)
-length(usable_dates) / nrow(check) # 90%
+# show UNUSABLE quarters, where the sum of 3 digit wages is more than 1% different from total wages
+check |>
+  filter(apdiff3 >= 0.01) |>
+  select(bonus_year, date, group1, group2, group3, apdiff2, apdiff3)
+# the bonus years with bad quarters  are all missing important quarters so we'll need to drop the whole year
 
-bonus1 <- qcew1 |>
+# drop years where the 3 digit sum of wages is more than 1% different from total wages
+bad_years <- check |> filter(apdiff3 >= 0.01) |> pull(bonus_year) |> unique()
+length(bad_years) / length(unique(check$bonus_year)) # lose 18% of years
+
+bonus1 <- qcew2 |>
   filter(
-    areatype == "state",
-    date %in% usable_dates,
-    naics_level == 3
+    group %in% c(1, 3)
   ) |>
-  select(date, naics, naics_title, totwage, empq)
+  filter(!bonus_year %in% bad_years) |>
+  mutate(quarter = quarter(date), avgqpay = totwage / empq) |>
+  select(
+    bonus_year,
+    date,
+    quarter,
+    group,
+    naics,
+    naics_title,
+    totwage,
+    empq,
+    avgqpay
+  )
+count(bonus1, bonus_year)
 
-# define bonus year as quarters 2, 3, and 4 plus the following quarter 1
-# drop years that don't have 4 quarters of data
-bonus2 <- bonus1 |>
-  mutate(bonus_year = ifelse(quarter(date) == 1, year(date) - 1, year(date))) |>
-  mutate(nquarters = n(), .by = c(naics, bonus_year)) |>
-  filter(nquarters == 4)
-
-
-qcew2 <- qcew |>
-  filter(
-    naics %in% c("00", "52", "523"),
-    areatype == "state"
+# verify
+bonus1 |>
+  summarise(
+    totwage = sum(totwage),
+    .by = c(bonus_year, date, group)
   ) |>
-  select(date, naics, naics_title, empq, totwage) |>
+  pivot_wider(
+    names_from = group,
+    values_from = totwage,
+    names_prefix = "group"
+  ) |>
   mutate(
-    indname = factor(
-      naics,
-      levels = c("00", "52", "523"),
-      labels = c("total", "naics52", "naics523")
-    ),
+    apdiff3 = abs(group3 / group1 - 1)
+  ) |>
+  arrange(desc(apdiff3))
+
+count(bonus1, bonus_year)
+
+```
+
+```{r}
+
+# drop bad naics-bonus_year combinations, where we don't have 4 quarters for the combon
+bad_combos <- bonus1 |>
+  summarise(nquarters = n(), .by = c(bonus_year, naics)) |>
+  filter(nquarters < 4) |>
+  select(bonus_year, naics)
+
+bonus2 <- bonus1 |>
+  filter(group == 3) |>
+  anti_join(bad_combos, by = join_by(bonus_year, naics))
+
+
+```
+
+
+## Estimate bonuses for the bonus years with usable data
+
+```{r}
+
+bonus3 <- bonus2 |>
+  arrange(naics, date) |>
+  mutate(bonus_quarter = quarter %in% c(4, 1)) |>
+  mutate(
+    baseqavgpay = mean(avgqpay[!bonus_quarter]),
+    bonusqavgpay = mean(avgqpay[bonus_quarter]),
+    ratio = bonusqavgpay / baseqavgpay,
+    .by = c(bonus_year, naics)
+  ) |>
+  mutate(
+    bonuspay = ifelse(bonus_quarter & ratio >= 1.25, avgqpay - baseqavgpay, 0),
+    bonuswage = bonuspay * empq
+  )
+bonus3
+
+summary(bonus3)
+
+bonuses <- bonus3 |>
+  summarise(
+    bonuswage = sum(bonuswage),
+    .by = c(bonus_year)
+  ) |>
+  arrange(bonus_year)
+
+bonuses |>
+  ggplot(aes(x = bonus_year, y = bonuswage)) +
+  geom_line() +
+  geom_point()
+
+bonuses |>
+  mutate(pch = bonuswage / lag(bonuswage) - 1) |>
+  ggplot(aes(bonus_year, pch)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    breaks = seq(-1, 1, 0.1)
+  ) +
+  theme_presentation()
+
+bonusesq <- bonus3 |>
+  summarise(
+    bonuswage = sum(bonuswage),
+    .by = c(date)
+  ) |>
+  arrange(date)
+
+bonusesq |>
+  mutate(pch = bonuswage / lag(bonuswage, 4) - 1) |>
+  replace_na(list(pch = 0)) |>
+  ggplot(aes(date, pch)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    breaks = seq(-1, 1, 0.1)
+  ) +
+  theme_presentation()
+
+bonusesq |>
+  ggplot(aes(date, bonuswage)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  # scale_y_continuous(
+  #   labels = scales::percent_format(accuracy = 1),
+  #   breaks = seq(-1, 1, 0.1)
+  # ) +
+  theme_presentation()
+
+
+```
+
+## Aggregate bonuses
+
+```{r}
+
+qcew2
+qtot <- qcew2 |>
+  filter(naics == "00")
+
+qtot |>
+  ggplot(aes(date, totwage)) +
+  geom_line() +
+  geom_point()
+
+qtot2 <- qtot |>
+  mutate(
     quarter = quarter(date),
+    avgqpay = totwage / empq,
+    bonus_quarter = quarter %in% c(4, 1)
+  ) |>
+  mutate(
+    baseqavgpay = mean(avgqpay[!bonus_quarter]),
+    bonusqavgpay = mean(avgqpay[bonus_quarter]),
+    ratio = bonusqavgpay / baseqavgpay,
+    .by = c(bonus_year, naics)
   )
 
-skimr::skim(qcew2)
+qtot2 |>
+  ggplot(aes(date, avgqpay)) +
+  geom_line() +
+  geom_point()
+
+qtot2 |>
+  filter(year(date) >= 2020) |>
+  ggplot(aes(date, ratio)) +
+  geom_line() +
+  geom_point() +
+  scale_x_date(date_breaks = "6 months") +
+  theme_presentation() +
+  theme_rotate()
+
 
 ```
 

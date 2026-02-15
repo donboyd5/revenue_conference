@@ -1,4 +1,5 @@
 # load this after we define GITROOT
+rm(list = setdiff(ls(envir = .GlobalEnv), "GITROOT"), envir = .GlobalEnv)
 
 DDATA <- fs::path(GITROOT, "data")
 
