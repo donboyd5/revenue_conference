@@ -34,7 +34,7 @@ count(dtfm |> filter(typesort %in% 1:2), typesort, type, tax, vname)
 
 pitsut <- dtfm |>
   filter(str_starts(vname, "pit_") | vname == "user_sut") |>
-  select(vname, tax, date, value)
+  select(vname, tax, date, sfy, value)
 
 saveRDS(pitsut, fs::path(DDATA, "pitsut.rds"))
 
@@ -47,7 +47,6 @@ pitsut <- readRDS(fs::path(DDATA, "pitsut.rds"))
 
 pitsut |>
   filter(vname == "pit_wh") |>
-  mutate(sfy = ifelse(month(date) > 3, year(date) + 1, year(date))) |>
   summarise(pit_wh = sum(value), .by = sfy)
 
 pitsut |>
@@ -65,7 +64,7 @@ pdata <- pitsut |>
 scan_gaps(pdata) # if there are gaps, fix them
 
 pdata |>
-  filter(year(date) >= 2022) |>
+  filter(year(date) >= 2024) |>
   ggtime::gg_season(value, period = "year") +
   labs(
     title = "Seasonal Pattern",

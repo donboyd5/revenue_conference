@@ -647,6 +647,7 @@ piagi |>
 ## Wages
 
 ```{r}
+#| label: wage=prep
 
 tmp <- count(qcew, naics_level, naics, naics_title)
 
@@ -725,7 +726,7 @@ pdata |>
   theme_presentation() +
   theme(
     strip.text = element_text(face = "bold"),
-    axis.text.x = element_text(angle = 0),
+    axis.text.x = element_text(angle = 0, size = rel(0.8)),
     plot.caption = ggtext::element_markdown(),
   ) +
   theme_rotate(angle = 90) +
@@ -791,12 +792,12 @@ pdata |>
   theme_presentation() +
   theme(
     strip.text = element_text(face = "bold"),
-    axis.text.x = element_text(angle = 0),
+    axis.text.x = element_text(angle = 0, size = rel(0.8)),
     plot.caption = ggtext::element_markdown(),
   ) +
   theme_rotate(angle = 90) +
   ggtitle(
-    "PIT Withholding Tax Collections by Month, Calendar years 2022-2025",
+    "PIT Withholding Tax Collections by Month, Calendar years 2022 through most recent",
     subtitle = "Red horizontal line is monthly mean"
   ) +
   labs(
@@ -808,8 +809,94 @@ pdata |>
 
 ```
 
-## Recent news from other states
+## Other states' recent revenue forecasts
 
+```{r}
+#| output: true
+#| fig-width: 14
+#| fig-height: 9
+
+# Create the data
+revenue_growth <- tibble(
+  fiscal_year = rep(
+    c("FY 2024", "FY 2025", "FY 2026\nforecast", "FY 2027\nforecast"),
+    each = 2
+  ),
+  tax_type = rep(c("Personal income tax", "Sales tax"), 4),
+  value = c(
+    0.3,
+    1.1, # FY 2024
+    7.3,
+    2.5, # FY 2025
+    3.8,
+    3.2, # FY 2026
+    2.6,
+    2.9
+  ) # FY 2027
+) |>
+  mutate(
+    fiscal_year = factor(
+      fiscal_year,
+      levels = c("FY 2024", "FY 2025", "FY 2026\nforecast", "FY 2027\nforecast")
+    ),
+    tax_type = factor(tax_type, levels = c("Personal income tax", "Sales tax"))
+  )
+
+# Create the plot
+revenue_growth |>
+  ggplot(aes(x = fiscal_year, y = value, fill = tax_type)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  geom_text(
+    aes(label = paste0(value, "%")),
+    position = position_dodge(width = 0.8),
+    vjust = -0.5,
+    size = 3.5
+  ) +
+  scale_fill_manual(
+    values = c("Personal income tax" = "steelblue", "Sales tax" = "coral")
+  ) +
+  scale_y_continuous(
+    name = NULL,
+    labels = scales::label_percent(scale = 1, accuracy = 1),
+    breaks = seq(0, 8, 1),
+    limits = c(0, 8.5),
+    expand = c(0, 0)
+  ) +
+  scale_x_discrete(name = NULL) +
+  labs(
+    fill = NULL,
+    caption = "Source: Urban-Brookings Tax Policy Center\nNote: Most states have a July 1 fiscal year"
+  ) +
+  # annotate(
+  #   "text",
+  #   x = 1,
+  #   y = 0.2,
+  #   label = "Note: Most states have a July 1 fiscal year",
+  #   hjust = 0,
+  #   size = 3,
+  #   color = "gray40"
+  # ) +
+  ggtitle(
+    "State hidstory and forecasted growth in personal income and sales tax",
+    subtitle = "Median of 40 reporting states"
+  ) +
+  theme_presentation() +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text = element_text(size = 11),
+    # plot.caption = element_text(size = 10) # hjust = 0,
+  ) +
+  theme(
+    legend.title = element_blank(),
+    legend.position = c(0.85, 0.85),
+    legend.background = element_rect(fill = "white", color = "gray80"),
+    legend.key.size = unit(1.5, "lines")
+    # legend.text = element_text(size = 11) # ,
+  )
+
+
+```
 
 
 ## Revenue
