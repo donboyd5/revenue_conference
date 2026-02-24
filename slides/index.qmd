@@ -872,7 +872,7 @@ piagi |>
 - Concentrated - top 1.5% of taxpayers account for about 75% of capital gains realizations [@nys_pit_summary2]
 - Hot money - can be shifted relatively easily across years by timing decisions of a small number of high-income taxpayers
 - Payments on gains are volatile, too -- typically paid with quarterly estimated tax, especially January, and in the next fiscl year with April tax returns and extension requests
-- Not included in traditional economic data - NIPA personal income excludes capital gains [@bea_nipa_handbook_ch2, @bea_personal_income_agi_money_income_2023]
+- Not included in traditional economic data - NIPA personal income excludes capital gains [@bea_nipa_handbook_ch2]
 :::
 
 ## Capital gains episodes (national)
