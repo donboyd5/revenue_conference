@@ -983,12 +983,11 @@ Gains *available* to be realized:
 
 *Choices* about whether and when to realize gains:
 
-- Current federal, state, and local tax rates
-- Expected future tax rates influence
-    - Short-run responses (e.g., sell now to beat next year's higher rate!)
-    - Long-run responses (e.g., shift portfolio toward more dividend or interest-paying assets)
+- Current federal, state, and local tax rates -- e.g., higher rates can encourage holding assets longer, or shifting portfolios more toward interest- and divident-paying assets
+- Expected future tax rates can trigger anticipatory responses -- e.g., sell now to beat next year's higher rate!
+- Other factors may include liquidity concerns, cash flow needs, and risk tolerance
 
-Even _**if**_ the underlying forecast of the stock market is correct (!) professionally prepared capital gains models tend to have huge errors.
+Even _**if**_ underlying stock market forecasts are correct (!) capital gains models tend to have huge errors.
 
 ::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
 See @nysbudget2025methodology for a good discussion of the DOB capital gains forecasting model.
