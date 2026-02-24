@@ -970,6 +970,32 @@ Notes: Capital gains realizations tend to move with asset prices, but they're mu
 :::
 ::::
 
+## What drives capital gains realizations?
+
+:::: {style="font-size: 0.55em;"}
+
+Gains *available* to be realized:
+
+- Equity market activity
+- Real estate market activity
+- Overall economic growth
+- State-specific factors such as dominant industries (e.g., private equity, venture capital, tourism)
+
+*Choices* about whether and when to realize gains:
+
+- Current federal, state, and local tax rates
+- Expected future tax rates influence
+    - Short-run responses (e.g., sell now to beat next year's higher rate!)
+    - Long-run responses (e.g., shift portfolio toward more dividend or interest-paying assets)
+
+Even _**if**_ the underlying forecast of the stock market is correct (!) professionally prepared capital gains models tend to have huge errors.
+
+::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
+See @nysbudget2025methodology for a good discussion of the DOB capital gains forecasting model.
+:::
+::::
+
+
 ## Recent capital gains forecasts
 
 :::: {style="font-size: 0.55em;"}
@@ -982,7 +1008,7 @@ Notes: Capital gains realizations tend to move with asset prices, but they're mu
 | 2027 (forecast) | 0.8% | -3.6% | n/a | n/a |
 
 ::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
-Notes: Both CA and MA noted strong gains-related collections in 2025 leading to upward revisions. CBO forecasts are driven by a simple return-to-more-normal-gains assumption.<br>Sources: @nysbudget2026ero, @cbo2026outlook, @cadof2026budgetsummary, and @snyder2025fy2027.
+Notes: Both CA and MA noted strong gains-related collections in 2025 leading to upward revisions. CBO forecasts assumes gradual return to more-normal share of GDP.<br>Sources: @nysbudget2026ero, @cbo2026outlook, @cadof2026budgetsummary, and @snyder2025fy2027.
 :::
 
 ::::
