@@ -911,6 +911,9 @@ Most recent available forecasts as of February Notable missing states: IL, NJ, N
 | 2009-2021 | **rose** to 8.7% of GDP (+383%) | Long slow recovery and COVID selloff |
 | 2021-2023 | **fell** to 3.5% of GDP (-60%) | COVID shutdown and slow recovery |
 | 2023-2025 | **rose** to 5.3% of GDP (+51%) (*estimated*) | strong stock market, NVIDIA, AI |
+::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
+Source: [your source here]
+:::
 :::
 
 ## Revenue
