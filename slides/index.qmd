@@ -958,11 +958,12 @@ One of several large revenue risks to be managed
 
 ## Why capital gains are important
 
-- large
-- not in the measured economy
-- concentrated
+- Large - about 10-18% of adjusted gross income, depending on year [@nysbudget2026ero]. Big impact on revenue
+- Volatile - range greatly from year to year
+- Concentrated - top 1.5% of taxpayers account for about 75% of capital gains realizations (@nys_open_data_pit_filers_summary_dataset2_f3t7zvbx)
 - hot money - discretionary
 - payment timing
+- Not in the traditionally measured economy - NIPA personal income excludes accrued or realized capital gains (@bea_nipa_handbook_ch2_2024, @bea_personal_income_agi_money_income_2023)
 
 
 ## Capital gains episodes (national)
