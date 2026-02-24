@@ -900,21 +900,22 @@ Most recent available forecasts as of February Notable missing states: IL, NJ, N
 
 ## Capital gains episodes (national)
 
-::: {style="font-size: 0.6em;"}
+:::: {style="font-size: 0.5em;"}
 |  |  |  |
-|----------|-------------------------------|----------------------------|
-| **Period** | **Capital gains realizations...** | **Context** |
-| 1996-2000 | **rose** from 3.2% of GDP to 6.3% (+97%) | dot-com bubble, stock market boom |
-| 2000-2003 | **fell** to 2.5% of GDP (-60%) | dot-com and stock market bust |
-| 2003-2007 | **rose** to 6.4% of GDP (+156%) | housing bubble, bull stock market |
-| 2007-2009 | **fell** to 1.8% of GDP (-72%) | Global Financial Crisis |
-| 2009-2021 | **rose** to 8.7% of GDP (+383%) | Long slow recovery and COVID selloff |
-| 2021-2023 | **fell** to 3.5% of GDP (-60%) | COVID shutdown and slow recovery |
-| 2023-2025 | **rose** to 5.3% of GDP (+51%) (*estimated*) | strong stock market, NVIDIA, AI |
+|------------------|------------------------------|---------------------------|
+| **Period** | **Capital gains % of GDP** | **Context** |
+| 1996-2000 | **rose 95%** from 3.2% to 6.3% | Dot-com boom |
+| 2000-2002 | **fell 61%** from 6.3% to 2.5% | Dot-com bust |
+| 2002-2007 | **rose 160%** from 2.5% to 6.4% | Credit + housing boom |
+| 2007-2009 | **fell 72%** from 6.4% to 1.8% | Housing bust + Great Recession |
+| 2009-2021 | **rose 380%** from 1.8% to 8.7% | Post-Great-Recession bull market; pandemic-era surge |
+| 2021-2023 | **fell 60%** from 8.7% to 3.5% | Inflation shock, Fed tightening, 2022 bear market |
+| 2023-2025 | **rose 52%** from 3.5% to 5.3% (*estimated*) | AI / mega-cap rally + broad market strength |
+
 ::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
-Source: [your source here]
+Notes: Capital gains realizations tend to move with asset prices, but they're much more volatile and can be shifted across years by timing decisions (e.g., harvesting gains and losses, reacting to anticipated policy changes). Percent changes based on unrounded numbers.<br>Source: Analysis of net capital gains realizations data in @cbo2026outlook.
 :::
-:::
+::::
 
 ## Revenue
 
