@@ -27,20 +27,16 @@ execute:
 
 ## Revenue forecasters' woes
 
--  We don't truly know the present -- substantial data lags
--  The past isn't what it used to be -- data revisions
--  The economy we measure is not quite the economy we tax
--  Must forecast *when* people pay, in addition to *what* they owe
+- We don't truly know the present -- substantial data lags
+- The past isn't what it used to be -- data revisions
+- The economy we measure is not quite the economy we tax
+- Must forecast *when* people pay, in addition to *what* they owe
 
 Each issue adds to forecast risk.
 
-::: {.notes}
-Lags - PIT data from tax returns -- 2023 is latest full file
-Data revisions -- employment data
-Economy we tax -- capital gains
-When people pay -- estimated tax and final returns
+::: notes
+Lags - PIT data from tax returns -- 2023 is latest full file Data revisions -- employment data Economy we tax -- capital gains When people pay -- estimated tax and final returns
 :::
-
 
 ```{r}
 #| label: setup
@@ -127,12 +123,11 @@ pop |>
 
 ```
 
-
 <!-- ## Employment -->
 
 <!-- ## Downward NYS employment revisions ahead? -->
 
-## <span style="font-size: 0.9em;">Downward NYS employment revisions ahead?</span>
+## [Downward NYS employment revisions ahead?]{style="font-size: 0.9em;"}
 
 ```{r}
 #| label: employment-bench-nonbench-pchya
@@ -212,7 +207,6 @@ p
 
 ```
 
-
 ## DOB employment forecast seems less pessimistic in context of early benchmark
 
 ```{r}
@@ -285,14 +279,21 @@ data |>
   cols_align(align = "left", columns = src) |>
   fmt_percent(columns = -src, decimals = 1) |>
   sub_missing(columns = -src, missing_text = "-") |>
+  tab_style(
+    style = list(cell_fill(color = "#D9F2D9")),
+    locations = cells_body(
+      columns = c(y2025, y2026, y2027),
+      rows = src == "Executive budget (DOB)"
+    )
+  ) |>
   tab_source_note(
     "Sources: U.S. Bureau of Labor Statistics (CES), New York Federal Reserve Bank (NY Fed), and NYS Division of the Budget (DOB)"
   )
 
 ```
 
-
 # Linking economic and tax-revenue forecasts
+
 ```{r}
 #| label: get-agi-pi-data
 
@@ -382,7 +383,6 @@ pdata |>
 
 ```
 
-
 ## AGI vs. Personal Income Components
 
 ```{r}
@@ -459,7 +459,6 @@ piagi <- agibase2 |>
 
 ```
 
-
 ```{r}
 #| label: show-pi-agi-components
 #| output: false
@@ -514,7 +513,6 @@ piagi |>
     legend.key.size = unit(1.5, "lines")
   )
 ```
-
 
 ```{r}
 #| label: show-pi-agi-components2
@@ -573,7 +571,6 @@ piagi |>
   )
 
 ```
-
 
 ```{r}
 #| label: show-pi-agi-components3
@@ -742,8 +739,7 @@ pdata |>
 
 ```
 
-
-## {.no-title}
+##  {.no-title}
 
 ```{r}
 #| label: wh-plot
@@ -812,6 +808,7 @@ pdata |>
 ## Other states' recent revenue forecasts
 
 ```{r}
+#| label: other-states-revenue-forecasts
 #| output: true
 #| fig-width: 14
 #| fig-height: 9
@@ -865,7 +862,7 @@ revenue_growth |>
   scale_x_discrete(name = NULL) +
   labs(
     fill = NULL,
-    caption = "Source: Urban-Brookings Tax Policy Center\nNote: Most states have a July 1 fiscal year"
+    caption = "Source: Urban-Brookings Tax Policy Center\nNote: 46 states have a July 1 fiscal year"
   ) +
   # annotate(
   #   "text",
@@ -877,7 +874,7 @@ revenue_growth |>
   #   color = "gray40"
   # ) +
   ggtitle(
-    "State hidstory and forecasted growth in personal income and sales tax",
+    "State history and forecasted growth in personal income and sales tax",
     subtitle = "Median of 40 reporting states"
   ) +
   theme_presentation() +
@@ -895,9 +892,27 @@ revenue_growth |>
     # legend.text = element_text(size = 11) # ,
   )
 
-
 ```
 
+::: notes
+Most recent available forecasts as of February Notable missing states: IL, NJ, NC, OH NY included but has minimal impact on medians 46 states on July 1 fiscal year
+:::
+
+## Selected capital gains episodes
+
+::: {style="font-size: 0.6em;"}
+|  |  |  |
+|-----------------|------------------------|----------------------------|
+| **Period** | **National capital gains realizations:** | **Context** |
+| 1996-2000 | **rose** from 3.2% of GDP to 6.3% (+97%) | dot-com bubble, stock market boom |
+| 2000-2003 | **fell** to 2.5% of GDP (-60%) | dot-com and stock market bust |
+| 2003-2007 | rose to 6.4% of GDP (+156%) | housing bubble, bull stock market |
+| 2007-2009 | fell to 1.8% of GDP (-72%) | Global Financial Crisis |
+| 2009-2021 | rose to 8.7% of GDP (+383%) | Long slow recovery and COVID selloff |
+| 2021-2023 | fell to 3.5% of GDP (-60%) | COVID shutdown and slow recovery |
+| 2023-2025 | rose to 5.3% of GDP (+51%) (*estimated*) | strong stock market, NVIDIA, AI |
+| 2025- | ?? |  |
+:::
 
 ## Revenue
 
