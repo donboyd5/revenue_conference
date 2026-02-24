@@ -123,6 +123,10 @@ pop |>
 
 ```
 
+::: notes
+These data are not lagged much, but they are highly uncertain. Analysts have had great difficulty reconciling the 2020 decennial census with previous annual population estimates.
+:::
+
 <!-- ## Employment -->
 
 <!-- ## Downward NYS employment revisions ahead? -->
@@ -187,7 +191,12 @@ p <- pdata |>
     limits = c(-0.005, NA)
   ) +
   ggtitle("NYS employment % change vs. year ago") +
-  scale_x_date(name = NULL, date_breaks = "3 months", date_labels = "%b %Y") +
+  scale_x_date(
+    name = NULL,
+    breaks = seq(as.Date("2022-01-01"), as.Date("2026-01-01"), by = "3 months"),
+    date_labels = "%b %Y"
+  ) +
+  coord_cartesian(xlim = c(NA_Date_, as.Date("2025-12-10"))) +
   labs(
     caption = "Sources: Bureau of Labor Statistics (CES) and New York Federal Reserve Bank (early benchmark)"
   ) +
@@ -203,25 +212,47 @@ p <- pdata |>
     legend.key.size = unit(1.5, "lines")
   )
 
-p
+
+# bounds (Dates)
+xmin <- as.Date("2025-03-15")
+xmax <- as.Date("2026-01-15")
+ymin <- -0.005
+ymax <- 0.02
+
+# ellipse params in numeric-date units (days)
+x0_n <- (as.numeric(xmin) + as.numeric(xmax)) / 2
+a <- (as.numeric(xmax) - as.numeric(xmin)) / 2
+y0 <- (ymin + ymax) / 2
+b <- (ymax - ymin) / 2
+
+# lots of points + explicit closure
+n_pts <- 2000
+t <- seq(0, 2 * pi, length.out = n_pts)
+
+ell_pts <- tibble(
+  date = as.Date(x0_n + a * cos(t), origin = "1970-01-01"),
+  pchya = y0 + b * sin(t)
+)
+
+# force closure by appending the first point
+ell_pts <- dplyr::bind_rows(ell_pts, ell_pts[1, ])
 
 p +
-  ggforce::geom_ellipse(
-    aes(
-      x0 = as.Date("2025-09-01"), # center of March 2025 – Jan 2026 range
-      y0 = 0.010, # vertical center — adjust to sit between the two lines
-      a = 160, # horizontal radius in days (~5 months each side)
-      b = 0.015, # vertical radius — adjust to fit the spread
-      angle = 0
-    ),
-    color = "red",
+  geom_path(
+    data = ell_pts,
+    aes(x = date, y = pchya),
+    inherit.aes = FALSE,
+    colour = "darkgreen",
+    linetype = "solid",
     linewidth = 0.9,
-    fill = NA,
-    inherit.aes = FALSE
+    lineend = "round"
   )
 
-
 ```
+
+::: notes
+Initial employment data are based on relatively small sample of employers. U.S. BLS benchmarks these data annually to more comprehensive data from quarterly unemployment insurance tax records. NY Fed essentially mimics that process, but more frequently and sooner. DOB also does something similar, but not as frequenty.
+:::
 
 ## DOB employment forecast seems less pessimistic in context of early benchmark
 
@@ -914,11 +945,17 @@ revenue_growth |>
 Most recent available forecasts as of February Notable missing states: IL, NJ, NC, OH NY included but has minimal impact on medians 46 states on July 1 fiscal year
 :::
 
+## What drives capital gains realizations?
+
+
+
 ## Capital gains episodes (national)
+
+<br>
 
 :::: {style="font-size: 0.55em;"}
 |  |  |  |
-|------------------|------------------------------|---------------------------|
+|------------------|----------------------------|--------------------------|
 | **Period** | **Capital gains % of GDP** | **Context** |
 | 1996-2000 | **rose 95%** from 3.2% to 6.3% | Dot-com boom |
 | 2000-2002 | **fell 61%** from 6.3% to 2.5% | Dot-com bust |
@@ -931,6 +968,23 @@ Most recent available forecasts as of February Notable missing states: IL, NJ, N
 ::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
 Notes: Capital gains realizations tend to move with asset prices, but they're much more volatile and can be shifted across years by timing decisions (e.g., harvesting gains and losses, reacting to anticipated policy changes). Percent changes based on unrounded numbers.<br>Source: Analysis of net capital gains realizations data in @cbo2026outlook.
 :::
+::::
+
+## Recent capital gains forecasts
+
+:::: {style="font-size: 0.55em;"}
+|  |  |  |  |  |
+|----|----|----|----|----|
+| <br>&nbsp;**Period** | **DOB, NYS capital gains** | **CBO, U.S. capital gains** | **CA DOF, California capital gains** | **MA DTF, MA “capital gains tax”** |
+| 2024 (estimated) | 54.9% | 31.8% | 58% | n/a |
+| 2025 (estimated/forecast) | 18.9% | 27.1% | 8% | strong, \~6-11% above prior forecast |
+| 2026 (forecast) | 3.3% | 3.9% | 1% | FY 2027: -16.4% to -10.7% |
+| 2027 (forecast) | 0.8% | -3.6% | n/a | n/a |
+
+::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
+Notes: Both CA and MA noted strong gains-related collections in 2025 leading to upward revisions. CBO forecasts are driven by a simple return-to-more-normal-gains assumption.<br>Sources: @nysbudget2026ero, @cbo2026outlook, @cadof2026budgetsummary, and @snyder2025fy2027.
+:::
+
 ::::
 
 ## Revenue
