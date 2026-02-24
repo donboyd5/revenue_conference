@@ -1,6 +1,6 @@
 ---
-title: "New York Tax Revenue and the Economy"
-subtitle: "NYS Consensus Economic and Revenue<br> Forecasting Conference"
+title: "New York Tax Revenue and the Economy<br><span style='font-size: 0.8em; font-style: italic; font-weight: normal;'>-- Selected Issues --</span>"
+subtitle: "NYS Consensus Economic and Revenue<br>Forecasting Conference"
 author: "Don Boyd"
 date: "2026-02-27"
 date-format: long
