@@ -205,6 +205,22 @@ p <- pdata |>
 
 p
 
+p +
+  ggforce::geom_ellipse(
+    aes(
+      x0 = as.Date("2025-09-01"), # center of March 2025 – Jan 2026 range
+      y0 = 0.010, # vertical center — adjust to sit between the two lines
+      a = 160, # horizontal radius in days (~5 months each side)
+      b = 0.015, # vertical radius — adjust to fit the spread
+      angle = 0
+    ),
+    color = "red",
+    linewidth = 0.9,
+    fill = NA,
+    inherit.aes = FALSE
+  )
+
+
 ```
 
 ## DOB employment forecast seems less pessimistic in context of early benchmark
@@ -900,7 +916,7 @@ Most recent available forecasts as of February Notable missing states: IL, NJ, N
 
 ## Capital gains episodes (national)
 
-:::: {style="font-size: 0.5em;"}
+:::: {style="font-size: 0.55em;"}
 |  |  |  |
 |------------------|------------------------------|---------------------------|
 | **Period** | **Capital gains % of GDP** | **Context** |
