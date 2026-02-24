@@ -32,10 +32,14 @@ execute:
 - The economy we measure is not quite the economy we tax
 - Must forecast *when* people pay, in addition to *what* they owe
 
-Each issue adds to forecast risk.
+Each issue adds to forecast risk. Each arises in the discussion below.
 
 ::: notes
-Lags - PIT data from tax returns -- 2023 is latest full file Data revisions -- employment data Economy we tax -- capital gains When people pay -- estimated tax and final returns
+Econ forecasters face the first 2 issues. But revenue forecasters face them and the next 2 as well.
+Lags - PIT data from tax returns -- 2023 is latest full file
+Data revisions -- employment data
+Economy we tax -- capital gains
+When people pay -- estimated tax and final returns
 :::
 
 ```{r}
@@ -254,7 +258,7 @@ p +
 Initial employment data are based on relatively small sample of employers. U.S. BLS benchmarks these data annually to more comprehensive data from quarterly unemployment insurance tax records. NY Fed essentially mimics that process, but more frequently and sooner. DOB also does something similar, but not as frequenty.
 :::
 
-## DOB employment forecast seems less pessimistic in context of early benchmark
+## DOB employment forecast seems less conservative in context of early benchmark
 
 ```{r}
 #| label: dob-nyseea-cy-growth
@@ -392,7 +396,10 @@ pdata <- piagi |>
 
 ```
 
-<!-- ## Economic and tax-base variables often diverge -->
+
+## The economy we tax
+
+Table or bar chart -- AGI and personal income
 
 ## Economic and tax-base variables often diverge
 
@@ -945,8 +952,17 @@ revenue_growth |>
 Most recent available forecasts as of February Notable missing states: IL, NJ, NC, OH NY included but has minimal impact on medians 46 states on July 1 fiscal year
 :::
 
-## What drives capital gains realizations?
+# Capital gains
 
+One of several large revenue risks to be managed
+
+## Why capital gains are important
+
+- large
+- not in the measured economy
+- concentrated
+- hot money - discretionary
+- payment timing
 
 
 ## Capital gains episodes (national)
@@ -1012,33 +1028,12 @@ Notes: Both CA and MA noted strong gains-related collections in 2025 leading to 
 
 ::::
 
-## Revenue
-
-# Another section
-
-## The economy we tax
-
-Table or bar chart -- AGI and personal income
 
 ## Risks
 
 - how big? / how wrong?
 - when will we know
 
-## Why capital gains are important
-
-- large
-- concentrated
-- hot money - discretionary
-- payment timing
-
-## Large
-
-## Concentrated
-
-## Hot money
-
-## Timing
 
 ## References
 
