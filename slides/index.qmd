@@ -898,12 +898,12 @@ revenue_growth |>
 Most recent available forecasts as of February Notable missing states: IL, NJ, NC, OH NY included but has minimal impact on medians 46 states on July 1 fiscal year
 :::
 
-## Selected capital gains episodes (national)
+## Capital gains episodes (national)
 
 ::: {style="font-size: 0.6em;"}
 |  |  |  |
-|----------|---------------------------|----------------------------|
-| **Period** | **Capital gains realizations:** | **Context** |
+|----------|-------------------------------|----------------------------|
+| **Period** | **Capital gains realizations...** | **Context** |
 | 1996-2000 | **rose** from 3.2% of GDP to 6.3% (+97%) | dot-com bubble, stock market boom |
 | 2000-2003 | **fell** to 2.5% of GDP (-60%) | dot-com and stock market bust |
 | 2003-2007 | **rose** to 6.4% of GDP (+156%) | housing bubble, bull stock market |
