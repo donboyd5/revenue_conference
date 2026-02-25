@@ -390,7 +390,9 @@ data |>
 
 # Wages and withholding
 
-## Wages
+##  {.no-title}
+
+<!-- wages -->
 
 ```{r}
 #| label: wage-prep
@@ -426,7 +428,11 @@ wages3 <- wages2 |> select(date, total, finance)
 
 wages3 |>
   arrange(date) |>
-  mutate(across(c(total, finance), \(x) x / lag(x, 4) - 1, .names = "{.col}pchya")) |>
+  mutate(across(
+    c(total, finance),
+    \(x) x / lag(x, 4) - 1,
+    .names = "{.col}pchya"
+  )) |>
   filter(quarter(date) %in% c(4, 1)) |>
   tail(24)
 
@@ -471,7 +477,7 @@ pdata |>
     expand = expansion(add = c(0.4, 0.4)) # add internal left/right padding
   ) +
   scale_y_continuous(
-    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 0.1),
+    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 1),
     breaks = seq(0, 100e9, by = 10e9),
     # limits = c(0, NA)
   ) +
@@ -480,10 +486,11 @@ pdata |>
     strip.text = element_text(face = "bold"),
     axis.text.x = element_text(angle = 0, size = rel(0.8)),
     plot.caption = ggtext::element_markdown(),
+    panel.grid.minor = element_line(colour = "grey90", linewidth = 0.25),
   ) +
   theme_rotate(angle = 90) +
   ggtitle(
-    "QCEW Financial Sector (NAICS 523) Wages by Quarter, Calendar years 2023-2025",
+    "QCEW Financial Sector (NAICS 523) Wages by Quarter\nCalendar years 2023-2025",
     subtitle = "Red horizontal line is quarterly mean"
   ) +
   labs(
@@ -495,6 +502,8 @@ pdata |>
 ```
 
 ##  {.no-title}
+
+<!-- withholding -->
 
 ```{r}
 #| label: wh-plot
@@ -573,6 +582,18 @@ pdata |>
 
 ::: notes
 Dec 2025 +17.6% vs. prior year, Jan 2026 +2.5%.
+:::
+
+## Recent wage and withholding trends
+
+- Unfortunately, latest quarter for robust wage data (QCEW) is Q1 2025. Finance wages were up 20.3%, after +17% in Q4 2024.
+- Primary data available since then is PIT withholding, which was up +17.6% in Dec 2025 and +2.5% in Jan 2026 vs. prior year.
+- February 2026 withholding is critical -- on top of strong 2025, which was up 19% over 2024
+- NY experts believe 2026 was another strong bonus year. They know better than me.
+
+::: notes
+NYC Comptroller appears to forecast bonuses up 7-9% in 2025
+DOB FY 2026 bonuses up 25.9% p.21 ero2027
 :::
 
 ::: {style="font-size: 0.9em;"}
