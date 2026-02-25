@@ -1077,12 +1077,13 @@ revenue_growth |>
 Most recent available forecasts as of February Notable missing states: IL, NJ, NC, OH NY included but has minimal impact on medians 46 states on July 1 fiscal year
 :::
 
-## Risks
+## Final thoughts
 
-- how big? / how wrong?
+- Population growth and economy are slowing
+- Employment looks like it may be revised downward
 - when will we know
 
 ## References
 
-::: {#refs style="font-size: 0.5em;"}
+::: {#refs style="font-size: 0.6em;"}
 :::
