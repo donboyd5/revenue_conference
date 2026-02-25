@@ -963,10 +963,11 @@ shares |>
   ggplot(aes(x = ilabel, y = share, fill = measure)) +
   geom_col(position = position_dodge(width = 0.8), width = 0.7) +
   scale_fill_manual(
-    values = c("Tax returns" = "steelblue", "Capital gains" = "coral")
+    values = c("# of Tax returns" = "steelblue", "Capital gains" = "coral")
   ) +
   scale_y_continuous(
     name = "Share of total",
+    breaks = seq(0, 1, by = 0.1),
     labels = scales::label_percent(accuracy = 1)
   ) +
   scale_x_discrete(name = NULL) +
