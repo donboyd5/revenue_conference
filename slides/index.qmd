@@ -875,6 +875,108 @@ piagi |>
 - Not included in traditional economic data - NIPA personal income excludes capital gains, whether realized or accrued [@bea_nipa_handbook_ch2]
 :::
 
+## Capital gains are concentrated
+
+```{r}
+#| label: capital-gains-shares-data
+
+df <- nysagi |>
+  filter(
+    rstat == "All Filers",
+    por == "All Places",
+    county == "All Places",
+    state == "All",
+    country == "All",
+    year == 2023
+  ) |>
+  # filter(sortincome == 16) |>
+  select(year, sortincome, agirange, numret, nysagi, capgains) |>
+  arrange(sortincome)
+
+# df |>
+#   mutate(across(c(numret, nysagi, capgains), \(x) x / x[sortincome == 16]))
+
+# check totals
+# df |>
+#   mutate(group = ifelse(sortincome == 16, "total", "other")) |>
+#   summarise(
+#     across(c(numret, nysagi, capgains), \(x) sum(x)),
+#     .by = group
+#   )
+# good, we can drop the totals row
+
+# collapse to smaller groups
+
+ilevs <- 1:4
+ilabs <- c(
+  "<$100k",
+  "$100k-$500k",
+  "$500k-$1m",
+  ">= $1m"
+)
+
+df2 <- df |>
+  filter(sortincome != 16) |>
+  mutate(
+    igroup = case_when(
+      sortincome <= 10 ~ 1,
+      sortincome %in% 11:13 ~ 2,
+      sortincome == 14 ~ 3,
+      sortincome == 15 ~ 4,
+      .default = 0
+    ),
+    ilabel = factor(igroup, levels = ilevs, labels = ilabs)
+  ) |>
+  summarise(
+    across(c(numret, nysagi, capgains), \(x) sum(x)),
+    .by = c(igroup, ilabel)
+  )
+# df2
+
+shares <- df2 |>
+  mutate(across(c(numret, nysagi, capgains), \(x) x / sum(x))) |>
+  select(igroup, ilabel, numret, capgains)
+
+
+```
+
+```{r}
+#| label: capital-gains-shares
+#| output: true
+#| fig-width: 14
+#| fig-height: 9
+
+shares |>
+  # mutate(ilabel = factor(ilabel, levels = ilabel[order(igroup)])) |>
+  pivot_longer(
+    c(numret, capgains),
+    names_to = "measure",
+    values_to = "share"
+  ) |>
+  mutate(
+    measure = factor(
+      measure,
+      levels = c("numret", "capgains"),
+      labels = c("# of Tax returns", "Capital gains")
+    )
+  ) |>
+  ggplot(aes(x = ilabel, y = share, fill = measure)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  scale_fill_manual(
+    values = c("Tax returns" = "steelblue", "Capital gains" = "coral")
+  ) +
+  scale_y_continuous(
+    name = "Share of total",
+    labels = scales::label_percent(accuracy = 1)
+  ) +
+  scale_x_discrete(name = NULL) +
+  ggtitle("Distribution of Tax Returns and Capital Gains by AGI Group") +
+  labs(caption = "Source: NYS Department of Taxation and Finance") +
+  theme_presentation() +
+  theme(legend.title = element_blank())
+
+```
+
 ## Capital gains episodes (national)
 
 <br>
