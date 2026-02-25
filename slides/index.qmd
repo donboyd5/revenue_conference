@@ -552,7 +552,8 @@ pdata |>
     caption = "Source: NYS Department of Taxation and Finance<br>**CAUTION: Vertical axis does not start at zero**"
   ) +
   geom_point(
-    data = pdata |> filter(mon == "Jan", year == 2026),
+    data = pdata |>
+      filter((mon == "Jan" & year == 2026) | (mon == "Dec" & year == 2025)),
     aes(x = year, y = value),
     shape = 21,
     size = 8,
@@ -563,6 +564,10 @@ pdata |>
   )
 
 ```
+
+::: notes
+Dec 2025 +17.6% vs. prior year, Jan 2026 +2.5%.
+:::
 
 ::: {style="font-size: 0.9em;"}
 # Tax base measures ≠ economic measures
