@@ -393,7 +393,7 @@ data |>
 ## Wages
 
 ```{r}
-#| label: wage=prep
+#| label: wage-prep
 
 tmp <- count(qcew, naics_level, naics, naics_title)
 
@@ -423,6 +423,12 @@ wages2 |>
   )
 
 wages3 <- wages2 |> select(date, total, finance)
+
+wages3 |>
+  arrange(date) |>
+  mutate(across(c(total, finance), \(x) x / lag(x, 4) - 1, .names = "{.col}pchya")) |>
+  filter(quarter(date) %in% c(4, 1)) |>
+  tail(24)
 
 ```
 
@@ -971,7 +977,7 @@ Even ***if*** analysts could forecast the stock market correctly, econometric mo
 :::
 
 ::: {style="font-size: 0.5em; color: gray; margin-top: 0.5em;"}
-See @nysbudget2025methodology for a good discussion of the DOB capital gains forecasting model.
+See @nysbudget2026methodology for a good discussion of the DOB capital gains forecasting model.
 :::
 
 ## Recent capital gains forecasts
