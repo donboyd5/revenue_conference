@@ -875,7 +875,10 @@ piagi |>
 - Not included in traditional economic data - NIPA personal income excludes capital gains, whether realized or accrued [@bea_nipa_handbook_ch2]
 :::
 
-## Capital gains are concentrated
+<!-- ## Capital gains are concentrated -->
+
+## <span style="font-size: 0.8em;">About 1.5% of returns have 75%+ of capital gains</span>
+
 
 ```{r}
 #| label: capital-gains-shares-data
