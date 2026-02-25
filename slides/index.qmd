@@ -919,7 +919,126 @@ piagi |>
 - Not included in traditional economic data - NIPA personal income excludes capital gains, whether realized or accrued [@bea_nipa_handbook_ch2]
 :::
 
-<!-- ## Capital gains are concentrated -->
+## Capital gains are volatile
+
+```{r}
+#| label: cg-noncg-data
+
+df <- nysagi |>
+  filter(
+    rstat == "All Filers",
+    por == "All Places",
+    county == "All Places",
+    state == "All",
+    country == "All"
+  ) |>
+  filter(sortincome == 16) |>
+  select(year, taxliab, nysagi, wages, capgains) |>
+  mutate(nonwagecg = nysagi - wages - capgains, noncg = nysagi - capgains) |>
+  arrange(year)
+
+# df |>
+#   mutate(across(-year, \(x) x - lag(x))) |>
+#   pivot_longer(-year, names_to = "variable", values_to = "change") |>
+#   ggplot(aes(year, change, colour = variable)) +
+#   geom_line() +
+#   geom_point()
+
+cgnoncg <- df |>
+  select(year, nysagi, capgains, noncg) |>
+  mutate(across(-year, \(x) x / lag(x) - 1)) |>
+  pivot_longer(-year, names_to = "variable", values_to = "pchya")
+
+# df |>
+#   select(year, nysagi, capgains, noncg) |>
+#   mutate(across(-year, \(x) x / lag(x) - 1)) |>
+#   pivot_longer(-year, names_to = "variable", values_to = "pchya") |>
+#   ggplot(aes(year, pchya, colour = variable)) +
+#   geom_line() +
+#   geom_point()
+
+```
+
+```{r}
+#| label: cg-noncg-plot
+#| output: true
+#| fig-width: 16
+#| fig-height: 8
+
+cgnoncg |>
+  filter(!is.na(pchya)) |>
+  mutate(
+    variable = factor(
+      variable,
+      levels = c("nysagi", "capgains", "noncg"),
+      labels = c("AGI", "Capital gains", "Non-gains AGI")
+    )
+  ) |>
+  ggplot(aes(x = factor(year), y = pchya, fill = variable)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  geom_hline(yintercept = 0) +
+  scale_fill_manual(
+    values = c(
+      "AGI" = "steelblue",
+      "Capital gains" = "coral",
+      "Non-gains AGI" = "seagreen"
+    )
+  ) +
+  scale_y_continuous(
+    name = "% change vs. prior year",
+    labels = scales::label_percent(accuracy = 1)
+  ) +
+  scale_x_discrete(name = NULL) +
+  ggtitle("Growth Rates of AGI, Capital Gains, and Other Income") +
+  labs(caption = "Source: NYS Department of Taxation and Finance") +
+  theme_presentation() +
+  theme(legend.title = element_blank())
+
+```
+
+
+
+```{r}
+#| label: cg-taxliab-plot
+#| output: false
+#| fig-width: 16
+#| fig-height: 8
+
+cgtaxliab <- df |>
+  select(year, taxliab, capgains) |>
+  mutate(across(-year, \(x) x / lag(x) - 1)) |>
+  pivot_longer(-year, names_to = "variable", values_to = "pchya")
+
+cgtaxliab |>
+  filter(!is.na(pchya)) |>
+  mutate(
+    variable = factor(
+      variable,
+      levels = c("capgains", "taxliab"),
+      labels = c("Capital gains", "Tax liability")
+    )
+  ) |>
+  ggplot(aes(x = factor(year), y = pchya, fill = variable)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  geom_hline(yintercept = 0) +
+  scale_fill_manual(
+    values = c(
+      "Capital gains" = "steelblue",
+      "Tax liability" = "coral"
+    )
+  ) +
+  scale_y_continuous(
+    name = "% change vs. prior year",
+    labels = scales::label_percent(accuracy = 1)
+  ) +
+  scale_x_discrete(name = NULL) +
+  ggtitle("Growth Rates of AGI, Capital Gains, and Other Income") +
+  labs(caption = "Source: NYS Department of Taxation and Finance") +
+  theme_presentation() +
+  theme(legend.title = element_blank())
+
+```
+
 
 ## <span style="font-size: 0.8em;">About 1.5% of returns have 75%+ of capital gains</span>
 
@@ -1056,7 +1175,7 @@ Notes: Capital gains realizations tend to move with asset prices, but they're mu
 - Equity market activity
 - Real estate market activity
 - Overall economic growth
-- State-specific factors: dominant industries (private equity, venture capital)
+- Other state-specific factors: dominant industries (private equity, venture capital)
 :::
 
 ::: {style="width: 49%; background: #fdf3ec; border-radius: 6px; padding: 0.5em 1em;"}
@@ -1069,7 +1188,9 @@ Notes: Capital gains realizations tend to move with asset prices, but they're mu
 
 :::
 
-Even _**if**_ underlying stock market forecasts are correct (!) capital gains models tend to have huge errors.
+::: {style="font-size: 0.65em; "}
+Even _**if**_ analysts could forecast the stock market correctly, econometric models of capital gains realizations would have large errors.
+:::
 
 ::: {style="font-size: 0.5em; color: gray; margin-top: 0.5em;"}
 See @nysbudget2025methodology for a good discussion of the DOB capital gains forecasting model.
