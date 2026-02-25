@@ -291,3 +291,12 @@ piagi |>
   )
 
 ```
+
+
+```{=html}
+<!-- - PI includes all residents. AGI includes resident *tax filers* and non-resident *tax filers*
+- PI includes employer contributions for benefits such as health insurance and pensions, AGI does not
+- PI includes the value of certain benefits such as the value of Medicare and Medicaid benefits, but AGI does not
+- PI does NOT include accrued or realized capital gains, but AGI includes realized gains
+- ...and more... -->
+```
