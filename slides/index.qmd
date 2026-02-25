@@ -163,6 +163,14 @@ pop |>
 These data are not lagged much, but they are highly uncertain. Analysts have had great difficulty reconciling the 2020 decennial census with previous annual population estimates.
 :::
 
+## Looking forward
+
+- Natural increase
+  - Births have been flat last few years but longer term trend has been downward
+  - Deaths trended downward in recent years but could be a post-pandemic-related blip; aging population suggests upward trend ahead
+
+- Domestic migration - pandemic loss appears to be behind us but
+
 <!-- ## Employment -->
 
 <!-- ## Downward NYS employment revisions ahead? -->
@@ -1062,6 +1070,33 @@ See @nysbudget2025methodology for a good discussion of the DOB capital gains for
 :::
 ::::
 
+
+## What drives capital gains realizations? {.experiment}
+
+::: {style="display: flex; gap: 2%; font-size: 0.6em;"}
+
+::: {style="width: 49%; background: #f0f4f8; border-radius: 6px; padding: 0.5em 1em;"}
+**Gains *available* to be realized**
+
+- Equity market activity
+- Real estate market activity
+- Overall economic growth
+- State-specific factors: dominant industries (private equity, venture capital, tourism)
+:::
+
+::: {style="width: 49%; background: #fdf3ec; border-radius: 6px; padding: 0.5em 1em;"}
+***Choices* about whether and when to realize**
+
+- Current tax rates — higher rates encourage holding longer or shifting to income-paying assets
+- Expected *future* rates trigger anticipatory responses — sell now to beat a coming increase
+- Liquidity needs, cash flow, and risk tolerance
+:::
+
+:::
+
+::: {style="font-size: 0.5em; color: gray; margin-top: 0.5em;"}
+See @nysbudget2025methodology for a good discussion of the DOB capital gains forecasting model.
+:::
 
 ## Recent capital gains forecasts
 
