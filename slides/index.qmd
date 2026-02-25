@@ -586,10 +586,12 @@ Dec 2025 +17.6% vs. prior year, Jan 2026 +2.5%.
 
 ## Recent wage and withholding trends
 
+::: {style="font-size: 0.9em;"}
 - Unfortunately, latest quarter for robust wage data (QCEW) is Q1 2025. Finance wages were up 20.3%, after +17% in Q4 2024.
 - Primary data available since then is PIT withholding, which was up +17.6% in Dec 2025 and +2.5% in Jan 2026 vs. prior year.
 - February 2026 withholding is critical -- on top of strong 2025, which was up 19% over 2024
 - NY experts believe 2026 was another strong bonus year. They know better than me.
+:::
 
 ::: notes
 NYC Comptroller appears to forecast bonuses up 7-9% in 2025
