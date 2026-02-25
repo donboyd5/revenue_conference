@@ -550,6 +550,16 @@ pdata |>
     x = NULL,
     # x = "Calendar year",
     caption = "Source: NYS Department of Taxation and Finance<br>**CAUTION: Vertical axis does not start at zero**"
+  ) +
+  geom_point(
+    data = pdata |> filter(mon == "Jan", year == 2026),
+    aes(x = year, y = value),
+    shape = 21,
+    size = 8,
+    colour = "darkgreen",
+    fill = NA,
+    stroke = 1.5,
+    inherit.aes = FALSE
   )
 
 ```
