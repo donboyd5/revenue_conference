@@ -965,7 +965,7 @@ See @nysbudget2025methodology for a good discussion of the DOB capital gains for
 +---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
 |                           |                            |                             |                                      |                                      |
 +===========================+============================+=============================+======================================+======================================+
-| <br> **Period**           | **DOB, NYS capital gains** | **CBO, U.S. capital gains** | **CA DOF, California capital gains** | **MA DTF, MA “capital gains tax”**   |
+| <br> **Period**           | **DOB, NYS capital gains** | **CBO, U.S. capital gains** | **CA DOF, California capital gains** | **MA DOR, MA “capital gains tax”**   |
 +---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
 | 2024 (estimated)          | 54.9%                      | 31.8%                       | 58%                                  | n/a                                  |
 +---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
@@ -976,9 +976,10 @@ See @nysbudget2025methodology for a good discussion of the DOB capital gains for
 | 2027 (forecast)           | 0.8%                       | -3.6%                       | n/a                                  | n/a                                  |
 +---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
 
+<br>
+
 ::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
-Notes: Both CA and MA noted strong gains-related collections in 2025 leading to upward revisions. California LAO cautions
-CBO forecast assumes gradual return to more-normal share of GDP.<br>Sources: @nysbudget2026ero, @cbo2026outlook, @cadof2026budgetsummary, and @snyder2025fy2027.
+Notes: Both CA DOF and MA DOR noted strong gains-related collections in 2025 leading to upward revisions. CA LAO expects PIT revenue to exceed expectations this year due to strong stock market and December/January collections, but cautions the growth is unsustainable. CBO forecast assumes gradual return to more-normal share of GDP. January estimated-tax collections in NY up ~26%.<br>Sources: @nysbudget2026ero, @cbo2026outlook, @cadof2026budgetsummary, @snyder2025fy2027, and @uhler_alamo_kerstein_bentz_isaaks_2026_updated_big_three_revenue_outlook.
 :::
 ::::
 
@@ -1081,9 +1082,10 @@ Most recent available forecasts as of February Notable missing states: IL, NJ, N
 
 - Population growth and economy are slowing
 - Employment looks like it may be revised downward
-- when will we know
+- Likely upside risk to 2025 capital gains even though DOB already is budgeting 19%. Are there payment timing risks? Outyear forecasts look, and probably should be, cautious.
+- In general, near-term results look good, lots of longer-term risk
 
 ## References
 
-::: {#refs style="font-size: 0.6em;"}
+::: {#refs style="font-size: 0.58em;"}
 :::
