@@ -558,7 +558,6 @@ pdata |>
 # Tax base measures ≠ economic measures
 :::
 
-
 ## [Personal income and adjusted gross income]{style="font-size: 0.9em;"}
 
 ```{r}
