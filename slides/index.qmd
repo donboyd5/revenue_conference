@@ -35,11 +35,7 @@ execute:
 Each issue adds to forecast risk. Each arises in slides below.
 
 ::: notes
-Econ forecasters face the first 2 issues. But revenue forecasters face them and the next 2 as well.
-Lags - PIT data from tax returns -- 2023 is latest full file
-Data revisions -- employment data
-Economy we tax -- capital gains
-When people pay -- estimated tax and final returns
+Econ forecasters face the first 2 issues. But revenue forecasters face them and the next 2 as well. Lags - PIT data from tax returns -- 2023 is latest full file Data revisions -- employment data Economy we tax -- capital gains When people pay -- estimated tax and final returns
 :::
 
 ```{r}
@@ -165,18 +161,17 @@ These data are not lagged much, but they are highly uncertain. Analysts have had
 
 ## Looking forward
 
-::: {style="font-size: 0.85em;"}
-
+:::: {style="font-size: 0.85em;"}
 - International immigration has been the main driver of NYS population growth in recent years. This is unlikely in the near future.
 - New York's natural increase is low, and may be lower in the future due in part to an aging population.
 - Pandemic-era surge in domestic outmigration may be over, but New York's long term trend has been outmigration
 - Population growth is likely to be low, constraining labor force and employment growth
 
-:::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
+::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
 Useful resources include @cbo2026demographicoutlook, @cornellPAD2026vintage2025statehighlights, and @frey2026reducedimmigration.
+:::
 ::::
 
-:::
 <!-- ## Employment -->
 
 <!-- ## Downward NYS employment revisions ahead? -->
@@ -393,8 +388,6 @@ data |>
 
 ```
 
-
-
 # Wages and withholding
 
 ## Wages
@@ -561,10 +554,12 @@ pdata |>
 
 ```
 
+::: {style="font-size: 0.9em;"}
+# Tax base measures ≠ economic measures
+:::
 
-# The economy and the tax base often are defined differently
 
-## <span style="font-size: 0.9em;">Personal income and adjusted gross income</span>
+## [Personal income and adjusted gross income]{style="font-size: 0.9em;"}
 
 ```{r}
 #| label: get-agi-pi-data
@@ -653,25 +648,37 @@ pdata |>
 
 ```
 
-## Many reasons why personal income and adjusted gross income differ
+## Many reasons for PI-AGI differences
 
-- PI includes all residents. AGI includes resident *tax filers* and non-resident *tax filers*
-- PI includes employer contributions for benefits such as health insurance and pensions, AGI does not
-- PI includes the value of certain benefits such as the value of Medicare and Medicaid benefits, but AGI does not
-- PI does NOT include accrued or realized capital gains, but AGI includes realized gains
-- ...and more...
+::: {style="font-size: 0.7em;"}
++-------------------+------------------------------------------------------------------------+---------------------------------+
+| Item              | Personal income                                                        | Adjusted gross income           |
++===================+========================================================================+=================================+
+| Universe          | All NYS residents                                                      | Resident *tax filers* +\        |
+|                   |                                                                        | non-resident *tax filers*       |
++-------------------+------------------------------------------------------------------------+---------------------------------+
+| Employer benefits | Included in income (e.g., employer-paid health insurance and pensions) | Not in AGI                      |
++-------------------+------------------------------------------------------------------------+---------------------------------+
+| Benefits          | Value of Medicaid, Medicare, and selected other benefits included      | Many benefits excluded          |
++-------------------+------------------------------------------------------------------------+---------------------------------+
+| Capital gains     | Neither accrued nor realized capital gains included                    | Realized capital gains included |
++-------------------+------------------------------------------------------------------------+---------------------------------+
 
+<br>
+...and more...
+
+:::
 
 # Capital gains
 
-## Why capital gains are important
+## Why capital gains are especially important
 
 ::: {style="font-size: 0.65em;"}
 - Large - about 10-18% of adjusted gross income, depending on year [@nysbudget2026ero]. Big impact on revenue
 - Volatile - range greatly from year to year
 - Concentrated - top 1.5% of taxpayers account for about 75% of capital gains realizations [@nys_pit_summary2]
 - Hot money - can be shifted relatively easily across years by timing decisions of a small number of high-income taxpayers
-- Payments on gains are volatile, too -- typically paid with quarterly estimated tax, especially January, and in the next fiscl year with April tax returns and extension requests
+- Payments on gains are volatile, too -- typically paid with quarterly estimated tax, especially January, and in the next fiscal year with April tax returns and extension requests
 - Not included in traditional economic data - NIPA personal income excludes capital gains, whether realized or accrued [@bea_nipa_handbook_ch2]
 :::
 
@@ -752,8 +759,6 @@ cgnoncg |>
 
 ```
 
-
-
 ```{r}
 #| label: cg-taxliab-plot
 #| output: false
@@ -795,9 +800,7 @@ cgtaxliab |>
 
 ```
 
-
-## <span style="font-size: 0.8em;">About 1.5% of returns have 75%+ of capital gains</span>
-
+## [About 1.5% of returns have 75%+ of capital gains]{style="font-size: 0.8em;"}
 
 ```{r}
 #| label: capital-gains-shares-data
@@ -905,16 +908,25 @@ shares |>
 <br>
 
 :::: {style="font-size: 0.55em;"}
-|  |  |  |
-|------------------|----------------------------|--------------------------|
-| **Period** | **Capital gains % of GDP** | **Context** |
-| 1996-2000 | **rose 95%** from 3.2% to 6.3% | Dot-com boom |
-| 2000-2002 | **fell 61%** from 6.3% to 2.5% | Dot-com bust |
-| 2002-2007 | **rose 160%** from 2.5% to 6.4% | Credit + housing boom |
-| 2007-2009 | **fell 72%** from 6.4% to 1.8% | Housing bust + Great Recession |
-| 2009-2021 | **rose 380%** from 1.8% to 8.7% | Post-Great-Recession bull market; pandemic-era surge |
-| 2021-2023 | **fell 60%** from 8.7% to 3.5% | Inflation shock, Fed tightening, 2022 bear market |
-| 2023-2025 | **rose 52%** from 3.5% to 5.3% (*estimated*) | AI / mega-cap rally + broad market strength |
++--------------+----------------------------------------------+------------------------------------------------------+
+|              |                                              |                                                      |
++==============+==============================================+======================================================+
+| **Period**   | **Capital gains % of GDP**                   | **Context**                                          |
++--------------+----------------------------------------------+------------------------------------------------------+
+| 1996-2000    | **rose 95%** from 3.2% to 6.3%               | Dot-com boom                                         |
++--------------+----------------------------------------------+------------------------------------------------------+
+| 2000-2002    | **fell 61%** from 6.3% to 2.5%               | Dot-com bust                                         |
++--------------+----------------------------------------------+------------------------------------------------------+
+| 2002-2007    | **rose 160%** from 2.5% to 6.4%              | Credit + housing boom                                |
++--------------+----------------------------------------------+------------------------------------------------------+
+| 2007-2009    | **fell 72%** from 6.4% to 1.8%               | Housing bust + Great Recession                       |
++--------------+----------------------------------------------+------------------------------------------------------+
+| 2009-2021    | **rose 380%** from 1.8% to 8.7%              | Post-Great-Recession bull market; pandemic-era surge |
++--------------+----------------------------------------------+------------------------------------------------------+
+| 2021-2023    | **fell 60%** from 8.7% to 3.5%               | Inflation shock, Fed tightening, 2022 bear market    |
++--------------+----------------------------------------------+------------------------------------------------------+
+| 2023-2025    | **rose 52%** from 3.5% to 5.3% (*estimated*) | AI / mega-cap rally + broad market strength          |
++--------------+----------------------------------------------+------------------------------------------------------+
 
 ::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
 Notes: Capital gains realizations tend to move with asset prices, but they're much more volatile and can be shifted across years by timing decisions (e.g., harvesting gains and losses, reacting to anticipated policy changes). Percent changes based on unrounded numbers.<br>Source: Analysis of net capital gains realizations data in @cbo2026outlook.
@@ -923,8 +935,7 @@ Notes: Capital gains realizations tend to move with asset prices, but they're mu
 
 ## What drives capital gains realizations?
 
-::: {style="display: flex; gap: 2%; font-size: 0.6em;"}
-
+::::: {style="display: flex; gap: 2%; font-size: 0.6em;"}
 ::: {style="width: 49%; background: #f0f4f8; border-radius: 6px; padding: 0.5em 1em;"}
 **Gains *available* to be realized**
 
@@ -935,17 +946,16 @@ Notes: Capital gains realizations tend to move with asset prices, but they're mu
 :::
 
 ::: {style="width: 49%; background: #fdf3ec; border-radius: 6px; padding: 0.5em 1em;"}
-***Choices* about whether and when to realize**
+***Choices*** **about whether and when to realize**
 
 - Current tax rates — higher rates encourage holding longer or shifting to income-paying assets
 - Expected *future* rates trigger anticipatory responses — sell now to beat a coming increase
 - Liquidity needs, cash flow, and risk tolerance
 :::
-
-:::
+:::::
 
 ::: {style="font-size: 0.65em; "}
-Even _**if**_ analysts could forecast the stock market correctly, econometric models of capital gains realizations would have large errors.
+Even ***if*** analysts could forecast the stock market correctly, econometric models of capital gains realizations would have large errors.
 :::
 
 ::: {style="font-size: 0.5em; color: gray; margin-top: 0.5em;"}
@@ -955,20 +965,24 @@ See @nysbudget2025methodology for a good discussion of the DOB capital gains for
 ## Recent capital gains forecasts
 
 :::: {style="font-size: 0.55em;"}
-|  |  |  |  |  |
-|----|----|----|----|----|
-| <br>&nbsp;**Period** | **DOB, NYS capital gains** | **CBO, U.S. capital gains** | **CA DOF, California capital gains** | **MA DTF, MA “capital gains tax”** |
-| 2024 (estimated) | 54.9% | 31.8% | 58% | n/a |
-| 2025 (estimated/forecast) | 18.9% | 27.1% | 8% | strong, \~6-11% above prior forecast |
-| 2026 (forecast) | 3.3% | 3.9% | 1% | FY 2027: -16.4% to -10.7% |
-| 2027 (forecast) | 0.8% | -3.6% | n/a | n/a |
++---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
+|                           |                            |                             |                                      |                                      |
++===========================+============================+=============================+======================================+======================================+
+| <br> **Period**           | **DOB, NYS capital gains** | **CBO, U.S. capital gains** | **CA DOF, California capital gains** | **MA DTF, MA “capital gains tax”**   |
++---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
+| 2024 (estimated)          | 54.9%                      | 31.8%                       | 58%                                  | n/a                                  |
++---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
+| 2025 (estimated/forecast) | 18.9%                      | 27.1%                       | 8%                                   | strong, \~6-11% above prior forecast |
++---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
+| 2026 (forecast)           | 3.3%                       | 3.9%                        | 1%                                   | FY 2027: -16.4% to -10.7%            |
++---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
+| 2027 (forecast)           | 0.8%                       | -3.6%                       | n/a                                  | n/a                                  |
++---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
 
 ::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
 Notes: Both CA and MA noted strong gains-related collections in 2025 leading to upward revisions. CBO forecast assumes gradual return to more-normal share of GDP.<br>Sources: @nysbudget2026ero, @cbo2026outlook, @cadof2026budgetsummary, and @snyder2025fy2027.
 :::
-
 ::::
-
 
 # Concluding comments
 
@@ -1065,14 +1079,12 @@ revenue_growth |>
 Most recent available forecasts as of February Notable missing states: IL, NJ, NC, OH NY included but has minimal impact on medians 46 states on July 1 fiscal year
 :::
 
-
 ## Risks
 
 - how big? / how wrong?
 - when will we know
 
-
 ## References
 
-::: {#refs style="font-size: 0.7em;"}
+::: {#refs style="font-size: 0.5em;"}
 :::
