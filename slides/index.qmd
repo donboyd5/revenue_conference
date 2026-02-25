@@ -165,12 +165,18 @@ These data are not lagged much, but they are highly uncertain. Analysts have had
 
 ## Looking forward
 
-- Natural increase
-  - Births have been flat last few years but longer term trend has been downward
-  - Deaths trended downward in recent years but could be a post-pandemic-related blip; aging population suggests upward trend ahead
+::: {style="font-size: 0.85em;"}
 
-- Domestic migration - pandemic loss appears to be behind us but
+- International immigration has been the main driver of NYS population growth in recent years. This is unlikely in the near future.
+- New York's natural increase is low, and may be lower in the future due in part to an aging population.
+- Pandemic-era surge in domestic outmigration may be over, but New York's long term trend has been outmigration
+- Population growth is likely to be low, constraining labor force and employment growth
 
+:::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
+Useful resources include @cbo2026demographicoutlook, @cornellPAD2026vintage2025statehighlights, and @frey2026reducedimmigration.
+::::
+
+:::
 <!-- ## Employment -->
 
 <!-- ## Downward NYS employment revisions ahead? -->
