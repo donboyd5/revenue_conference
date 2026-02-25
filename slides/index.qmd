@@ -1048,31 +1048,6 @@ Notes: Capital gains realizations tend to move with asset prices, but they're mu
 
 ## What drives capital gains realizations?
 
-:::: {style="font-size: 0.55em;"}
-
-Gains *available* to be realized:
-
-- Equity market activity
-- Real estate market activity
-- Overall economic growth
-- State-specific factors such as dominant industries (e.g., private equity, venture capital, tourism)
-
-*Choices* about whether and when to realize gains:
-
-- Current federal, state, and local tax rates -- e.g., higher rates can encourage holding assets longer, or shifting portfolios more toward interest- and divident-paying assets
-- Expected future tax rates can trigger anticipatory responses -- e.g., sell now to beat next year's higher rate!
-- Other factors may include liquidity concerns, cash flow needs, and risk tolerance
-
-Even _**if**_ underlying stock market forecasts are correct (!) capital gains models tend to have huge errors.
-
-::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
-See @nysbudget2025methodology for a good discussion of the DOB capital gains forecasting model.
-:::
-::::
-
-
-## What drives capital gains realizations? {.experiment}
-
 ::: {style="display: flex; gap: 2%; font-size: 0.6em;"}
 
 ::: {style="width: 49%; background: #f0f4f8; border-radius: 6px; padding: 0.5em 1em;"}
@@ -1081,7 +1056,7 @@ See @nysbudget2025methodology for a good discussion of the DOB capital gains for
 - Equity market activity
 - Real estate market activity
 - Overall economic growth
-- State-specific factors: dominant industries (private equity, venture capital, tourism)
+- State-specific factors: dominant industries (private equity, venture capital)
 :::
 
 ::: {style="width: 49%; background: #fdf3ec; border-radius: 6px; padding: 0.5em 1em;"}
@@ -1093,6 +1068,8 @@ See @nysbudget2025methodology for a good discussion of the DOB capital gains for
 :::
 
 :::
+
+Even _**if**_ underlying stock market forecasts are correct (!) capital gains models tend to have huge errors.
 
 ::: {style="font-size: 0.5em; color: gray; margin-top: 0.5em;"}
 See @nysbudget2025methodology for a good discussion of the DOB capital gains forecasting model.
