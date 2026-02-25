@@ -91,6 +91,13 @@ labels <- c(
   "International Migration"
 )
 
+label_df <- tibble(
+  variable = factor("Net Population Change", levels = labels),
+  x = factor(2025),
+  y = 20000,
+  label = "1.0"
+)
+
 pop |>
   filter(variable %in% keep) |>
   filter(year > 2020) |>
@@ -107,6 +114,78 @@ pop |>
     )
   ) +
   geom_hline(yintercept = 0) +
+  scale_x_discrete(name = NULL) +
+  scale_y_continuous(
+    name = "change (thousands)",
+    labels = scales::label_comma(scale = 1e-3, accuracy = 1),
+    limits = c(-350e3, 350e3),
+    breaks = seq(-400e3, 400e3, 100e3)
+  ) +
+  ggtitle("Annual Changes in New York State Population Since 2020 Census") +
+  labs(
+    caption = "Source: U.S. Census Bureau Population Estimates Program\nChanges are from July 1 to July 1"
+  ) +
+  facet_wrap(~variable, ncol = 2, scales = "fixed") +
+  geom_text(
+    data = label_df,
+    aes(x = x, y = y, label = label),
+    inherit.aes = FALSE,
+    size = 5
+  ) +
+  theme_presentation() +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(size = rel(1.3), face = "bold")
+  )
+
+```
+
+```{r}
+#| label: experiment
+#| output: true
+#| fig-width: 18
+#| fig-height: 10
+
+arrow_df <- tibble(
+  variable = factor("Net Population Change", levels = labels),
+  x = factor(2025), xend = factor(2025),
+  y = 70000, yend = 8000
+)
+
+annot_label_df <- tibble(
+  variable = factor("Net Population Change", levels = labels),
+  x = factor(2025), y = 80000, label = "1.0k"
+)
+
+pop |>
+  filter(variable %in% keep) |>
+  filter(year > 2020) |>
+  mutate(variable = factor(variable, levels = keep, labels = labels)) |>
+  arrange(variable) |>
+  ggplot(aes(x = factor(year), y = value, fill = variable)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(
+    values = c(
+      "Net Population Change" = "steelblue",
+      "Natural Change (Births minus Deaths)" = "seagreen",
+      "Domestic Migration" = "coral",
+      "International Migration" = "mediumpurple"
+    )
+  ) +
+  geom_hline(yintercept = 0) +
+  geom_segment(
+    data = arrow_df,
+    aes(x = x, xend = xend, y = y, yend = yend),
+    inherit.aes = FALSE,
+    arrow = arrow(length = unit(0.4, "cm"), type = "closed"),
+    color = "black", linewidth = 1
+  ) +
+  geom_label(
+    data = annot_label_df,
+    aes(x = x, y = y, label = label),
+    inherit.aes = FALSE,
+    size = 6, fontface = "bold", fill = "white", label.size = 0.5
+  ) +
   scale_x_discrete(name = NULL) +
   scale_y_continuous(
     name = "change (thousands)",
@@ -339,6 +418,10 @@ data |>
   ) |>
   tab_source_note(
     "Sources: U.S. Bureau of Labor Statistics (CES), New York Federal Reserve Bank (NY Fed), and NYS Division of the Budget (DOB)"
+  ) |>
+  tab_options(
+    table.font.size = px(20),
+    table.width = pct(100)
   )
 
 ```
