@@ -977,7 +977,8 @@ See @nysbudget2025methodology for a good discussion of the DOB capital gains for
 +---------------------------+----------------------------+-----------------------------+--------------------------------------+--------------------------------------+
 
 ::: {style="font-size: 0.85em; color: gray; margin-top: 0.5em;"}
-Notes: Both CA and MA noted strong gains-related collections in 2025 leading to upward revisions. CBO forecast assumes gradual return to more-normal share of GDP.<br>Sources: @nysbudget2026ero, @cbo2026outlook, @cadof2026budgetsummary, and @snyder2025fy2027.
+Notes: Both CA and MA noted strong gains-related collections in 2025 leading to upward revisions. California LAO cautions
+CBO forecast assumes gradual return to more-normal share of GDP.<br>Sources: @nysbudget2026ero, @cbo2026outlook, @cadof2026budgetsummary, and @snyder2025fy2027.
 :::
 ::::
 
