@@ -155,8 +155,24 @@ pop |>
 
 ```
 
+```{r}
+
+pop |>
+  filter(variable %in% c("internationalmig", "popestimate")) |>
+  pivot_wider(names_from = variable, values_from = value) |>
+  mutate(across(
+    c(internationalmig, popestimate),
+    list(change = \(x) x - lag(x))
+  )) |>
+  mutate(imchange = internationalmig_change / lag(popestimate))
+
+```
+
 ::: notes
 These data are not lagged much, but they are highly uncertain. Analysts have had great difficulty reconciling the 2020 decennial census with previous annual population estimates.
+
+Drop in international immigration is enormous: international migration fell by 195k between 2024 and 2025. That drop is about 1% of the state's 20m population. Many of these people would be working age -- big implications for the labor force and employment.
+
 :::
 
 ## Looking forward
@@ -501,7 +517,7 @@ pdata |>
 
 ```
 
-##  {.no-title}
+## Withholding tax season plot {.no-title}
 
 <!-- withholding -->
 
@@ -591,7 +607,7 @@ Dec 2025 +17.6% vs. prior year, Jan 2026 +2.5%.
 - Unfortunately, latest quarter for robust wage data (QCEW) is Q1 2025. Finance wages were up 20.3%, after +17% in Q4 2024.
 - Primary data available since then is PIT withholding, which was up +17.6% in Dec 2025 and +2.5% in Jan 2026 vs. prior year.
 - February 2026 withholding is critical -- on top of strong 2025, which was up 19% over 2024
-- NY experts believe 2026 was another strong bonus year. They know better than me.
+- NY experts believe 2025 was another strong bonus year. They know better than me.
 :::
 
 ::: notes
@@ -703,7 +719,7 @@ pdata |>
 +-------------------+------------------------------------------------------------------------+---------------------------------+
 | Employer benefits | Included in income (e.g., employer-paid health insurance and pensions) | Not in AGI                      |
 +-------------------+------------------------------------------------------------------------+---------------------------------+
-| Benefits          | Value of Medicaid, Medicare, and selected other benefits included      | Many benefits excluded          |
+| Social benefits   | Value of Medicaid, Medicare, and selected other benefits included      | Many benefits excluded          |
 +-------------------+------------------------------------------------------------------------+---------------------------------+
 | Capital gains     | Neither accrued nor realized capital gains included                    | Realized capital gains included |
 +-------------------+------------------------------------------------------------------------+---------------------------------+
@@ -1132,5 +1148,163 @@ Most recent available forecasts as of February Notable missing states: IL, NJ, N
 
 ## References
 
-::: {#refs style="font-size: 0.58em;"}
+::: {#refs style="font-size: 0.56em;"}
 :::
+
+# Appendix
+
+## Estimated tax season plot {.no-title}
+
+<!-- Estimated tax plot -->
+
+```{r}
+#| label: et-plot
+#| output: true
+#| fig-width: 14
+#| fig-height: 9
+
+pdata <- pitsut |>
+  filter(vname == "pit_et") |>
+  filter(year(date) >= 2022) |>
+  mutate(
+    year = year(date),
+    mon = factor(month(date, label = TRUE), levels = month.abb)
+  ) |>
+  arrange(date)
+
+yr_min <- min(lubridate::year(pdata$date))
+yr_max <- max(lubridate::year(pdata$date))
+
+facet_means <- pdata |>
+  summarise(mean_value = mean(value, na.rm = TRUE), .by = mon)
+
+pdata |>
+  ggplot(aes(x = year, y = value)) +
+  geom_line(aes(group = 1), color = "steelblue", na.rm = TRUE) +
+  geom_point(na.rm = TRUE) +
+  geom_hline(
+    data = facet_means,
+    aes(yintercept = mean_value),
+    color = "red",
+    linetype = "solid",
+    linewidth = 0.5,
+    inherit.aes = FALSE
+  ) +
+  facet_wrap(~mon, nrow = 1, scales = "fixed") + # one row, same y-axis across months
+  scale_x_continuous(
+    breaks = seq(yr_min, yr_max, by = 1),
+    expand = expansion(add = c(0.4, 0.4)) # add internal left/right padding
+  ) +
+  scale_y_continuous(
+    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 0.1),
+    breaks = seq(0, 10e9, by = 500e6),
+    # limits = c(0, NA)
+  ) +
+  theme_presentation() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 0, size = rel(0.8)),
+    plot.caption = ggtext::element_markdown(),
+  ) +
+  theme_rotate(angle = 90) +
+  ggtitle(
+    "PIT Estimated Tax Collections by Month, Calendar years 2022 through most recent",
+    subtitle = "Red horizontal line is monthly mean"
+  ) +
+  labs(
+    y = "$ billions",
+    x = NULL,
+    # x = "Calendar year",
+    caption = "Source: NYS Department of Taxation and Finance<br>**CAUTION: Vertical axis does not start at zero**"
+  ) +
+  geom_point(
+    data = pdata |>
+      filter((mon == "Jan" & year == 2026) | (mon == "Dec" & year == 2025)),
+    aes(x = year, y = value),
+    shape = 21,
+    size = 8,
+    colour = "darkgreen",
+    fill = NA,
+    stroke = 1.5,
+    inherit.aes = FALSE
+  )
+
+```
+
+## Final returns season plot {.no-title}
+
+<!-- Final returns plot -->
+
+```{r}
+#| label: fr-plot
+#| output: true
+#| fig-width: 14
+#| fig-height: 9
+
+pdata <- pitsut |>
+  filter(vname == "pit_fr") |>
+  filter(year(date) >= 2022) |>
+  mutate(
+    year = year(date),
+    mon = factor(month(date, label = TRUE), levels = month.abb)
+  ) |>
+  arrange(date)
+
+yr_min <- min(lubridate::year(pdata$date))
+yr_max <- max(lubridate::year(pdata$date))
+
+facet_means <- pdata |>
+  summarise(mean_value = mean(value, na.rm = TRUE), .by = mon)
+
+pdata |>
+  ggplot(aes(x = year, y = value)) +
+  geom_line(aes(group = 1), color = "steelblue", na.rm = TRUE) +
+  geom_point(na.rm = TRUE) +
+  geom_hline(
+    data = facet_means,
+    aes(yintercept = mean_value),
+    color = "red",
+    linetype = "solid",
+    linewidth = 0.5,
+    inherit.aes = FALSE
+  ) +
+  facet_wrap(~mon, nrow = 1, scales = "fixed") + # one row, same y-axis across months
+  scale_x_continuous(
+    breaks = seq(yr_min, yr_max, by = 1),
+    expand = expansion(add = c(0.4, 0.4)) # add internal left/right padding
+  ) +
+  scale_y_continuous(
+    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 0.1),
+    breaks = seq(0, 10e9, by = 500e6),
+    # limits = c(0, NA)
+  ) +
+  theme_presentation() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 0, size = rel(0.8)),
+    plot.caption = ggtext::element_markdown(),
+  ) +
+  theme_rotate(angle = 90) +
+  ggtitle(
+    "PIT Final Returns Collections by Month, Calendar years 2022 through most recent",
+    subtitle = "Red horizontal line is monthly mean"
+  ) +
+  labs(
+    y = "$ billions",
+    x = NULL,
+    # x = "Calendar year",
+    caption = "Source: NYS Department of Taxation and Finance<br>**CAUTION: Vertical axis does not start at zero**"
+  ) +
+  geom_point(
+    data = pdata |>
+      filter((mon == "Jan" & year == 2026) | (mon == "Dec" & year == 2025)),
+    aes(x = year, y = value),
+    shape = 21,
+    size = 8,
+    colour = "darkgreen",
+    fill = NA,
+    stroke = 1.5,
+    inherit.aes = FALSE
+  )
+
+```
