@@ -300,3 +300,46 @@ piagi |>
 - PI does NOT include accrued or realized capital gains, but AGI includes realized gains
 - ...and more... -->
 ```
+
+
+
+```{r}
+#| label: cg-taxliab-plot
+#| output: false
+#| fig-width: 16
+#| fig-height: 8
+
+cgtaxliab <- df |>
+  select(year, taxliab, capgains) |>
+  mutate(across(-year, \(x) x / lag(x) - 1)) |>
+  pivot_longer(-year, names_to = "variable", values_to = "pchya")
+
+cgtaxliab |>
+  filter(!is.na(pchya)) |>
+  mutate(
+    variable = factor(
+      variable,
+      levels = c("capgains", "taxliab"),
+      labels = c("Capital gains", "Tax liability")
+    )
+  ) |>
+  ggplot(aes(x = factor(year), y = pchya, fill = variable)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  geom_hline(yintercept = 0) +
+  scale_fill_manual(
+    values = c(
+      "Capital gains" = "steelblue",
+      "Tax liability" = "coral"
+    )
+  ) +
+  scale_y_continuous(
+    name = "% change vs. prior year",
+    labels = scales::label_percent(accuracy = 1)
+  ) +
+  scale_x_discrete(name = NULL) +
+  ggtitle("Growth Rates of AGI, Capital Gains, and Other Income") +
+  labs(caption = "Source: NYS Department of Taxation and Finance") +
+  theme_presentation() +
+  theme(legend.title = element_blank())
+
+```
