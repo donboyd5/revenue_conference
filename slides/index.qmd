@@ -1269,7 +1269,9 @@ Most recent available forecasts as of February Notable missing states: IL, NJ, N
 
 - Population growth and economy are slowing
 - Employment looks like it may be revised downward
-- Likely upside risk to 2025 capital gains even though DOB already is budgeting 19%. Are there payment timing risks? Outyear forecasts look, and probably should be, cautious.
+- Likely upside risk to 2025 capital gains even though DOB already is budgeting 19%.
+  - Are there payment timing risks?
+  - Outyear forecasts look, and probably should be, cautious.
 - In general, near-term results look good, lots of longer-term risk
 
 ## References
