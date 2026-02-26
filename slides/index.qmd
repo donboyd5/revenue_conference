@@ -156,6 +156,7 @@ pop |>
 ```
 
 ```{r}
+#| label: pop-components
 
 pop |>
   filter(variable %in% c("internationalmig", "popestimate")) |>
@@ -170,6 +171,8 @@ pop |>
 
 ::: notes
 These data are not lagged much, but they are highly uncertain. Analysts have had great difficulty reconciling the 2020 decennial census with previous annual population estimates.
+
+Rise in international immigration:  Mainly because of an increase in the number of humanitarian migrants, the net international migration estimate peaked in 2024 to almost 300,000 (Cornell PAD)
 
 Drop in international immigration is enormous: international migration fell by 195k between 2024 and 2025. That drop is about 1% of the state's 20m population. Many of these people would be working age -- big implications for the labor force and employment.
 
@@ -406,7 +409,7 @@ data |>
 
 # Wages and withholding
 
-##  {.no-title}
+## Wages plot {.no-title}
 
 <!-- wages -->
 
@@ -450,6 +453,15 @@ wages3 |>
     .names = "{.col}pchya"
   )) |>
   filter(quarter(date) %in% c(4, 1)) |>
+  tail(24)
+
+wages3 |>
+  arrange(date) |>
+  mutate(across(
+    c(total, finance),
+    \(x) x / lag(x, 4) - 1,
+    .names = "{.col}pchya"
+  )) |>
   tail(24)
 
 ```
@@ -518,8 +530,6 @@ pdata |>
 ```
 
 ## Withholding tax season plot {.no-title}
-
-<!-- withholding -->
 
 ```{r}
 #| label: wh-plot
@@ -604,10 +614,11 @@ Dec 2025 +17.6% vs. prior year, Jan 2026 +2.5%.
 ## Recent wage and withholding trends
 
 ::: {style="font-size: 0.9em;"}
-- Unfortunately, latest quarter for robust wage data (QCEW) is Q1 2025. Finance wages were up 20.3%, after +17% in Q4 2024.
+- Unfortunately, latest quarter for robust wage data (QCEW) is 2025Q2, up 3.9%  overall.
+  - Most recent bonus quarter is 2025Q1 (2024 bonus year) -- Finance wages were up 20.3%, after +17% in Q4 2024.
 - Primary data available since then is PIT withholding, which was up +17.6% in Dec 2025 and +2.5% in Jan 2026 vs. prior year.
 - February 2026 withholding is critical -- on top of strong 2025, which was up 19% over 2024
-- NY experts believe 2025 was another strong bonus year. They know better than me.
+- NY experts believe 2025 was another strong bonus year.
 :::
 
 ::: notes
@@ -729,14 +740,16 @@ pdata |>
 
 # Capital gains
 
-## Why capital gains are especially challenging
+## Capital gains are especially challenging
 
-::: {style="font-size: 0.75em;"}
+::: {style="font-size: 0.7em;"}
 - Large
 - Volatile
 - Hot money - shifted relatively easily across years by late-in-year timing decisions
 - Concentrated - a small number of high-income taxpayers make these decisions
-- *Timing* of payments on gains depends partly on taxpayer decisions
+- *Timing* of payments on gains not easy to interpret, depends partly on taxpayer decisions:
+  -  Typically paid through estimated payments in one state fiscal year and April/May final/extension payments in the next
+  -  So "last year's economy" is crucial for understanding payments at start of fiscal year
 - Not included in traditional economic measures
 :::
 
@@ -817,46 +830,6 @@ cgnoncg |>
 
 ```
 
-```{r}
-#| label: cg-taxliab-plot
-#| output: false
-#| fig-width: 16
-#| fig-height: 8
-
-cgtaxliab <- df |>
-  select(year, taxliab, capgains) |>
-  mutate(across(-year, \(x) x / lag(x) - 1)) |>
-  pivot_longer(-year, names_to = "variable", values_to = "pchya")
-
-cgtaxliab |>
-  filter(!is.na(pchya)) |>
-  mutate(
-    variable = factor(
-      variable,
-      levels = c("capgains", "taxliab"),
-      labels = c("Capital gains", "Tax liability")
-    )
-  ) |>
-  ggplot(aes(x = factor(year), y = pchya, fill = variable)) +
-  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
-  geom_hline(yintercept = 0) +
-  scale_fill_manual(
-    values = c(
-      "Capital gains" = "steelblue",
-      "Tax liability" = "coral"
-    )
-  ) +
-  scale_y_continuous(
-    name = "% change vs. prior year",
-    labels = scales::label_percent(accuracy = 1)
-  ) +
-  scale_x_discrete(name = NULL) +
-  ggtitle("Growth Rates of AGI, Capital Gains, and Other Income") +
-  labs(caption = "Source: NYS Department of Taxation and Finance") +
-  theme_presentation() +
-  theme(legend.title = element_blank())
-
-```
 
 ## [About 1.5% of returns have 75%+ of capital gains]{style="font-size: 0.8em;"}
 
@@ -875,20 +848,6 @@ df <- nysagi |>
   # filter(sortincome == 16) |>
   select(year, sortincome, agirange, numret, nysagi, capgains) |>
   arrange(sortincome)
-
-# df |>
-#   mutate(across(c(numret, nysagi, capgains), \(x) x / x[sortincome == 16]))
-
-# check totals
-# df |>
-#   mutate(group = ifelse(sortincome == 16, "total", "other")) |>
-#   summarise(
-#     across(c(numret, nysagi, capgains), \(x) sum(x)),
-#     .by = group
-#   )
-# good, we can drop the totals row
-
-# collapse to smaller groups
 
 ilevs <- 1:4
 ilabs <- c(
@@ -1044,9 +1003,173 @@ Notes: Both CA DOF and MA DOR noted strong gains-related collections in 2025 lea
 :::
 ::::
 
-# Concluding comments
+::: notes
+NY payments have been strong: ET June +13.5%, Sept +23.2%, Jan +25.8%. Suggests a lot of strength.
+Is there a SALT incentive
 
-## Other states' recent revenue forecasts
+:::
+
+
+## Estimated tax season plot {.no-title}
+
+<!-- Estimated tax plot -->
+
+```{r}
+#| label: et-plot
+#| output: true
+#| fig-width: 14
+#| fig-height: 9
+
+pdata <- pitsut |>
+  filter(vname == "pit_et") |>
+  filter(year(date) >= 2022) |>
+  mutate(
+    year = year(date),
+    mon = factor(month(date, label = TRUE), levels = month.abb)
+  ) |>
+  arrange(date)
+
+yr_min <- min(lubridate::year(pdata$date))
+yr_max <- max(lubridate::year(pdata$date))
+
+facet_means <- pdata |>
+  summarise(mean_value = mean(value, na.rm = TRUE), .by = mon)
+
+pdata |>
+  ggplot(aes(x = year, y = value)) +
+  geom_line(aes(group = 1), color = "steelblue", na.rm = TRUE) +
+  geom_point(na.rm = TRUE) +
+  geom_hline(
+    data = facet_means,
+    aes(yintercept = mean_value),
+    color = "red",
+    linetype = "solid",
+    linewidth = 0.5,
+    inherit.aes = FALSE
+  ) +
+  facet_wrap(~mon, nrow = 1, scales = "fixed") + # one row, same y-axis across months
+  scale_x_continuous(
+    breaks = seq(yr_min, yr_max, by = 1),
+    expand = expansion(add = c(0.4, 0.4)) # add internal left/right padding
+  ) +
+  scale_y_continuous(
+    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 0.1),
+    breaks = seq(0, 20e9, by = 500e6),
+    # limits = c(0, NA)
+  ) +
+  theme_presentation() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 0, size = rel(0.8)),
+    plot.caption = ggtext::element_markdown(),
+  ) +
+  theme_rotate(angle = 90) +
+  ggtitle(
+    "PIT Estimated Tax Collections by Month, Calendar years 2022 through most recent",
+    subtitle = "Red horizontal line is monthly mean"
+  ) +
+  labs(
+    y = "$ billions",
+    x = NULL,
+    # x = "Calendar year",
+    caption = "Source: NYS Department of Taxation and Finance<br>**CAUTION: Vertical axis does not start at zero**"
+  ) +
+  geom_point(
+    data = pdata |>
+      filter((mon == "Jan" & year == 2026) | (mon == "Dec" & year == 2025)),
+    aes(x = year, y = value),
+    shape = 21,
+    size = 8,
+    colour = "darkgreen",
+    fill = NA,
+    stroke = 1.5,
+    inherit.aes = FALSE
+  )
+
+```
+
+## Final returns season plot {.no-title}
+
+<!-- Final returns plot -->
+
+```{r}
+#| label: fr-plot
+#| output: true
+#| fig-width: 14
+#| fig-height: 9
+
+pdata <- pitsut |>
+  filter(vname == "pit_fr") |>
+  filter(year(date) >= 2022) |>
+  mutate(
+    year = year(date),
+    mon = factor(month(date, label = TRUE), levels = month.abb)
+  ) |>
+  arrange(date)
+
+yr_min <- min(lubridate::year(pdata$date))
+yr_max <- max(lubridate::year(pdata$date))
+
+facet_means <- pdata |>
+  summarise(mean_value = mean(value, na.rm = TRUE), .by = mon)
+
+pdata |>
+  ggplot(aes(x = year, y = value)) +
+  geom_line(aes(group = 1), color = "steelblue", na.rm = TRUE) +
+  geom_point(na.rm = TRUE) +
+  geom_hline(
+    data = facet_means,
+    aes(yintercept = mean_value),
+    color = "red",
+    linetype = "solid",
+    linewidth = 0.5,
+    inherit.aes = FALSE
+  ) +
+  facet_wrap(~mon, nrow = 1, scales = "fixed") + # one row, same y-axis across months
+  scale_x_continuous(
+    breaks = seq(yr_min, yr_max, by = 1),
+    expand = expansion(add = c(0.4, 0.4)) # add internal left/right padding
+  ) +
+  scale_y_continuous(
+    labels = scales::dollar_format(scale = 1e-9, suffix = "", accuracy = 0.1),
+    breaks = seq(0, 10e9, by = 500e6),
+    # limits = c(0, NA)
+  ) +
+  theme_presentation() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    axis.text.x = element_text(angle = 0, size = rel(0.8)),
+    plot.caption = ggtext::element_markdown(),
+  ) +
+  theme_rotate(angle = 90) +
+  ggtitle(
+    "PIT Final Returns Collections by Month, Calendar years 2022 through most recent",
+    subtitle = "Red horizontal line is monthly mean"
+  ) +
+  labs(
+    y = "$ billions",
+    x = NULL,
+    # x = "Calendar year",
+    caption = "Source: NYS Department of Taxation and Finance<br>**CAUTION: Vertical axis does not start at zero**"
+  ) +
+  geom_point(
+    data = pdata |>
+      filter((mon == "Jan" & year == 2026) | (mon == "Dec" & year == 2025)),
+    aes(x = year, y = value),
+    shape = 21,
+    size = 8,
+    colour = "darkgreen",
+    fill = NA,
+    stroke = 1.5,
+    inherit.aes = FALSE
+  )
+
+```
+
+
+# Other states' recent revenue forecasts
+
+## Median state forecasts {.no-title}
 
 ```{r}
 #| label: other-states-revenue-forecasts
@@ -1139,6 +1262,9 @@ revenue_growth |>
 Most recent available forecasts as of February Notable missing states: IL, NJ, NC, OH NY included but has minimal impact on medians 46 states on July 1 fiscal year
 :::
 
+
+# Concluding comments
+
 ## Final thoughts
 
 - Population growth and economy are slowing
@@ -1158,7 +1284,7 @@ Most recent available forecasts as of February Notable missing states: IL, NJ, N
 <!-- Estimated tax plot -->
 
 ```{r}
-#| label: et-plot
+#| label: et-plot2
 #| output: true
 #| fig-width: 14
 #| fig-height: 9
@@ -1236,7 +1362,7 @@ pdata |>
 <!-- Final returns plot -->
 
 ```{r}
-#| label: fr-plot
+#| label: fr-plot2
 #| output: true
 #| fig-width: 14
 #| fig-height: 9
