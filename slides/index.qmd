@@ -519,7 +519,8 @@ pdata <- pitsut |>
   mutate(
     year = year(date),
     mon = factor(month(date, label = TRUE), levels = month.abb)
-  )
+  ) |>
+  arrange(date)
 
 yr_min <- min(lubridate::year(pdata$date))
 yr_max <- max(lubridate::year(pdata$date))
